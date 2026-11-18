@@ -1,0 +1,6 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Regex pattern definitions in the security scanner are not secrets"
+paths = ['''mcp-servers/security-mcp/src/secrets\.ts''']

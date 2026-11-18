@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "skills": [
+    {
+      "name": "accessibility-testing",
+      "path": ".opencode/skills/accessibility-testing",
+      "enabled": true,
+      "description": "Run WCAG 2.1 AA accessibility and contrast checks on code changes"
+    }
+  ],
+  "gates": {
+    "phase-13-code-review": {
+      "required-checks": [
+        "accessibility-testing"
+      ],
+      "description": "Code review gate - run /test-accessibility --changed for color/button changes"
+    },
+    "phase-12-ux-hci": {
+      "required-checks": [
+        "accessibility-testing"
+      ],
+      "description": "UX/HCI review gate - run /audit-accessibility --dark-mode for styling changes"
+    }
+  }
+}

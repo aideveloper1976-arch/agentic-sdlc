@@ -1,0 +1,26 @@
+{
+  "name": "agentic-sdlc",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "description": "Multi-agent SDLC framework for OpenCode / Claude Code plus a suite of MCP servers for traceability, security, testing and UX.",
+  "workspaces": [
+    "packages/*",
+    "mcp-servers/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:framework": "node --test 'framework/test/**/*.test.mjs'",
+    "check": "npm run typecheck && npm test && npm run test:framework"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}

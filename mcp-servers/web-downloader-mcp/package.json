@@ -1,0 +1,27 @@
+{
+  "name": "@agentic-sdlc/web-downloader-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for downloading web content \u2014 HTML pages, documents, images, and binary files with safety controls",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc && chmod +x dist/index.js",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test 'test/**/*.test.ts'"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.8.0",
+    "zod": "^3.24.3",
+    "dotenv": "^16.4.7",
+    "execa": "^9.5.2",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/uuid": "^10.0.0"
+  },
+  "license": "MIT"
+}

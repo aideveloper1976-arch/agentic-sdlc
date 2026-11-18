@@ -1,0 +1,316 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Installer manifest for the agentic-sdlc MCP server collection. Consumed by installer/scripts/install.sh and install.ps1.",
+  "customRepo": {
+    "url": "https://github.com/aideveloper1976-arch/agentic-sdlc.git",
+    "branch": "main"
+  },
+  "tools": [
+    {
+      "name": "atlassian",
+      "mcpKey": "atlassian",
+      "dir": "atlassian",
+      "description": "Jira and Confluence REST API integration",
+      "sourceType": "custom",
+      "subdir": "mcp-servers/atlassian-mcp",
+      "buildCmd": "npm install && npm run build",
+      "postInstall": [],
+      "requiresPlaywright": false,
+      "envVars": [
+        "ATLASSIAN_BASE_URL",
+        "ATLASSIAN_EMAIL",
+        "ATLASSIAN_API_TOKEN"
+      ]
+    },
+    {
+      "name": "browser-pool",
+      "mcpKey": null,
+      "dir": "browser-pool",
+      "description": "Shared Chromium browser pool library used internally by browser-research-mcp, test-automation-mcp, and ux-hci-mcp. Not a standalone MCP server.",
+      "sourceType": "custom",
+      "subdir": "packages/browser-pool",
+      "buildCmd": "npm install",
+      "postInstall": [],
+      "requiresPlaywright": true,
+      "envVars": []
+    },
+    {
+      "name": "browser-research-mcp",
+      "mcpKey": "browser_research",
+      "dir": "browser-research-mcp",
+      "description": "Web search (SearXNG) and page extraction",
+      "sourceType": "custom",
+      "subdir": "mcp-servers/browser-research-mcp",
+      "buildCmd": "npm install && npm run build",
+      "postInstall": [
+        "npx playwright install chromium"
+      ],
+      "requiresPlaywright": true,
+      "envVars": [
+        "SEARXNG_URL",
+        "SEARXNG_BACKUP_URL",
+        "BROWSER_HEADLESS",
+        "EVIDENCE_DIR",
+        "BROWSER_TIMEOUT_MS"
+      ]
+    },
+    {
+      "name": "code-execution-mcp",
+      "mcpKey": "code_execution",
+      "dir": "code-execution-mcp",
+      "description": "Safe, sandboxed code execution",
+      "sourceType": "custom",
+      "subdir": "mcp-servers/code-execution-mcp",
+      "buildCmd": "npm install && npm run build",
+      "postInstall": [],
+      "requiresPlaywright": false,
+      "envVars": [
+        "CODE_EXECUTION_ALLOWED_DIR",
+        "CODE_EXECUTION_TIMEOUT_MS",
+        "CODE_EXECUTION_MAX_OUTPUT_CHARS",
+        "CODE_EXECUTION_DOCKER_ENABLED"
+      ]
+    },
+    {
+      "name": "github-mcp",
+      "mcpKey": "github",
+      "dir": "github-mcp",
+      "description": "GitHub API integration (PRs, branches, checks, issues)",
+      "sourceType": "custom",
+      "subdir": "mcp-servers/github-mcp",
+      "buildCmd": "npm install && npm run build",
+      "postInstall": [],
+      "requiresPlaywright": false,
+      "envVars": [
+        "GITHUB_TOKEN",
+        "GITHUB_OWNER",
+        "GITHUB_REPO"
+      ]
+    },
+    {
+      "name": "monitoring-mcp",
+      "mcpKey": "monitoring",
+      "dir": "monitoring-mcp",
+      "description": "Service health, metrics, alerting, anomaly detection",
+      "sourceType": "custom",
+      "subdir": "mcp-servers/monitoring-mcp",
+      "buildCmd": "npm install && npm run build",
+      "postInstall": [],
+      "requiresPlaywright": false,
+      "envVars": [
+        "NODE_ENV",
+        "MCP_PORT",
+        "LOG_MAX_LINES",
+        "LOG_MAX_SIZE",
+        "METRICS_INTERVAL",
+        "ALERTS_DIR",
+        "REPORTS_DIR",
+        "EVIDENCE_DIR",
+        "ALLOWED_SERVICES",
+        "DOCKER_ENABLED",
+        "HEALTH_TIMEOUT",
+        "ANOMALY_CPU_HIGH",
+        "ANOMALY_MEMORY_HIGH",
+        "ANOMALY_ERROR_SPIKE",
+        "ANOMALY_SLOW_RESPONSE",
+        "ANOMALY_RESTART_COUNT"
+      ]
+    },
+    {
+      "name": "security-mcp",
+      "mcpKey": "security",
+      "dir": "security-mcp",
+      "description": "SAST, dependency scanning, secret detection, API security",
+      "sourceType": "custom",
+      "subdir": "mcp-servers/security-mcp",
+      "buildCmd": "npm install && npm run build",
+      "postInstall": [],
+      "requiresPlaywright": false,
+      "envVars": [
+        "TRIVY_PATH",
+        "GITLEAKS_PATH",
+        "PIP_AUDIT_PATH",
+        "PROJECT_ROOT",
+        "EVIDENCE_DIR",
+        "TRACEABILITY_MCP_URL",
+        "TRACEABILITY_MCP_TOKEN"
+      ],
+      "optionalTools": [
+        "trivy",
+        "gitleaks",
+        "pip-audit"
+      ]
+    },
+    {
+      "name": "test-automation-mcp",
+      "mcpKey": "test_automation",
+      "dir": "test-automation-mcp",
+      "description": "E2E tests, visual regression, accessibility audits",
+      "sourceType": "custom",
+      "subdir": "mcp-servers/test-automation-mcp",
+      "buildCmd": "npm install && npm run build",
+      "postInstall": [
+        "npx playwright install chromium"
+      ],
+      "requiresPlaywright": true,
+      "envVars": [
+        "BASE_URL",
+        "ALLOWED_DOMAINS",
+        "DEFAULT_TIMEOUT_MS",
+        "NAVIGATION_MAX_DEPTH",
+        "HEADLESS",
+        "SCREENSHOT_DIR",
+        "EVIDENCE_DIR"
+      ]
+    },
+    {
+      "name": "traceability-mcp",
+      "mcpKey": "traceability",
+      "dir": "traceability-mcp",
+      "description": "End-to-end delivery traceability with Jira/Confluence sync",
+      "sourceType": "custom",
+      "subdir": "mcp-servers/traceability-mcp",
+      "buildCmd": "npm install && npm run build",
+      "postInstall": [
+        "npm run db:init"
+      ],
+      "requiresPlaywright": false,
+      "envVars": [
+        "TRACEABILITY_DB_PATH",
+        "TRACEABILITY_REPORT_DIR",
+        "ATLASSIAN_SITE_URL",
+        "ATLASSIAN_EMAIL",
+        "ATLASSIAN_API_TOKEN",
+        "JIRA_PROJECT_KEY",
+        "JIRA_BASE_URL",
+        "JIRA_ENABLED",
+        "CONFLUENCE_BASE_URL",
+        "CONFLUENCE_SPACE_KEY",
+        "CONFLUENCE_ENABLED",
+        "SYNC_MODE",
+        "SYNC_INTERVAL_SECONDS"
+      ]
+    },
+    {
+      "name": "ux-hci-mcp",
+      "mcpKey": "ux_hci",
+      "dir": "ux-hci-mcp",
+      "description": "UI analysis, usability evaluation, accessibility checks",
+      "sourceType": "custom",
+      "subdir": "mcp-servers/ux-hci-mcp",
+      "buildCmd": "npm install && npm run build",
+      "postInstall": [
+        "npx playwright install chromium"
+      ],
+      "requiresPlaywright": true,
+      "envVars": [
+        "ALLOWED_DOMAINS",
+        "HEADLESS",
+        "EVIDENCE_PATH",
+        "PORT"
+      ]
+    },
+    {
+      "name": "ux-intelligence-mcp",
+      "mcpKey": "ux_intelligence",
+      "dir": "ux-intelligence-mcp",
+      "description": "Design system intelligence (styles, palettes, typography, guidelines)",
+      "sourceType": "custom",
+      "subdir": "mcp-servers/ux-intelligence-mcp",
+      "buildCmd": "npm install && npm run build",
+      "postInstall": [],
+      "requiresPlaywright": false,
+      "envVars": []
+    },
+    {
+      "name": "web-downloader-mcp",
+      "mcpKey": "web_downloader",
+      "dir": "web-downloader-mcp",
+      "description": "Safe web content downloading",
+      "sourceType": "custom",
+      "subdir": "mcp-servers/web-downloader-mcp",
+      "buildCmd": "npm install && npm run build",
+      "postInstall": [],
+      "requiresPlaywright": false,
+      "envVars": [
+        "ALLOWED_DOMAINS",
+        "MAX_FILE_SIZE",
+        "DOWNLOAD_TIMEOUT_MS",
+        "DOWNLOAD_DIR",
+        "BLOCKED_EXTENSIONS"
+      ]
+    },
+    {
+      "name": "document-intake-mcp",
+      "mcpKey": "document_intake",
+      "dir": "document-intake-mcp",
+      "description": "Document parsing (PDF, DOCX, CSV, XLSX, Markdown)",
+      "sourceType": "custom",
+      "subdir": "mcp-servers/document-intake-mcp",
+      "buildCmd": "npm install && npm run build",
+      "postInstall": [],
+      "requiresPlaywright": false,
+      "envVars": [
+        "DOCUMENT_INTAKE_ROOT",
+        "DOCUMENT_EVIDENCE_DIR",
+        "DOCUMENT_REQUIREMENTS_DIR",
+        "DOCUMENT_RESEARCH_DIR",
+        "MAX_DOCUMENT_SIZE_MB",
+        "MAX_EXTRACTED_CHARS"
+      ]
+    },
+    {
+      "name": "graphify",
+      "mcpKey": null,
+      "dir": "graphify",
+      "description": "Knowledge graph CLI (Python, PyPI package 'graphifyy') \u2014 builds a code graph (god nodes, community structure, cross-file relationships) used by the `graphify` CLI/skill. Not an npm package \u2014 installed via pip, not built from the cloned source.",
+      "sourceType": "upstream",
+      "repo": "https://github.com/safishamsi/graphify.git",
+      "buildCmd": "pip install --user --upgrade graphifyy",
+      "postInstall": [],
+      "requiresPlaywright": false,
+      "requiresPython": true,
+      "envVars": [],
+      "optional": true
+    },
+    {
+      "name": "mcp-chrome",
+      "mcpKey": null,
+      "dir": "mcp-chrome",
+      "description": "Chrome extension + native bridge for MCP-driven browser control (optional, advanced \u2014 most setups use the npx chrome-devtools-mcp entry instead)",
+      "sourceType": "upstream",
+      "repo": "https://github.com/hangwin/mcp-chrome.git",
+      "buildCmd": "pnpm install && pnpm run build",
+      "postInstall": [],
+      "requiresPlaywright": false,
+      "envVars": [],
+      "optional": true
+    },
+    {
+      "name": "notebooklm-mcp-cli",
+      "mcpKey": null,
+      "dir": "notebooklm-mcp-cli",
+      "description": "CLI/MCP bridge for Google NotebookLM",
+      "sourceType": "upstream",
+      "repo": "https://github.com/jacob-bd/notebooklm-mcp-cli.git",
+      "buildCmd": "npm install && npm run build",
+      "postInstall": [],
+      "requiresPlaywright": false,
+      "envVars": [],
+      "optional": true
+    },
+    {
+      "name": "remotion-media-mcp",
+      "mcpKey": null,
+      "dir": "remotion-media-mcp",
+      "description": "Video/media generation and editing via Remotion",
+      "sourceType": "upstream",
+      "repo": "https://github.com/stephengpope/remotion-media-mcp.git",
+      "buildCmd": "npm install && npm run build",
+      "postInstall": [],
+      "requiresPlaywright": false,
+      "envVars": [],
+      "optional": true
+    }
+  ]
+}

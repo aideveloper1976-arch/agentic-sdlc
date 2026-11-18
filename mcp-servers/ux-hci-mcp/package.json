@@ -1,0 +1,26 @@
+{
+  "name": "@agentic-sdlc/ux-hci-mcp",
+  "version": "0.1.0",
+  "description": "UX/HCI MCP server for OpenCode - UI analysis, usability evaluation, accessibility checks",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test 'test/**/*.test.ts'"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.8.0",
+    "zod": "^3.24.3",
+    "dotenv": "^16.4.7",
+    "playwright": "^1.52.0",
+    "axe-core": "^4.10.3",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/uuid": "^10.0.0"
+  },
+  "private": true,
+  "license": "MIT"
+}

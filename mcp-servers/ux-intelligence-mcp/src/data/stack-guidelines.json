@@ -1,0 +1,198 @@
+[
+  {
+    "stack": "react", "description": "React with modern hooks and functional components",
+    "setup": ["Use Vite or Next.js for project scaffolding", "Use Tailwind CSS or CSS Modules for styling", "Use react-router-dom for routing"],
+    "components": {
+      "button": "<Button variant='primary|secondary|ghost' size='sm|md|lg'> using className-based variants",
+      "modal": "<Dialog.Root> from @radix-ui/react-dialog with Portal and Overlay",
+      "form": "React Hook Form + Zod for validation, useForm() for state management",
+      "card": "<div className='rounded-lg border p-4 shadow-sm'> with Tailwind",
+      "navbar": "<nav> with flex layout, sticky top-0, z-50",
+      "table": "<table> with sticky header, striped rows, responsive horizontal scroll"
+    },
+    "patterns": ["Custom hooks for reusable logic", "Compound components for complex UIs", "Error boundaries for crash recovery", "Suspense for loading states"],
+    "accessibility": ["Use @radix-ui primitives for accessible components", "aria-* attributes on custom interactive elements", "Focus management with useRef and useEffect"]
+  },
+  {
+    "stack": "next", "description": "Next.js with App Router and Server Components",
+    "setup": ["npx create-next-app with App Router, TypeScript, Tailwind", "Use src/ directory structure", "Configure basePath and middleware for auth"],
+    "components": {
+      "button": "Client component ('use client') with Tailwind variants and RSC-compatible loading",
+      "modal": "Intercepting routes with (.)modal pattern for URL-driven modals",
+      "form": "Server Actions for form handling, useFormState for validation feedback",
+      "card": "Can be Server Component if not interactive; pass data as props",
+      "navbar": "Server Component for static parts, Client Component wrapper for interactive elements",
+      "table": "Server Component for data fetching, Client Component for interactivity"
+    },
+    "patterns": ["Server Components as default, Client Components as needed", "Route groups for layout organization", "Loading.tsx for streaming SSR", "Middleware for auth and redirects", "Server Actions for mutations"],
+    "accessibility": ["Server Components reduce JS overhead", "streaming SSR improves perceived performance", "Use next/image for optimized images with built-in lazy loading"]
+  },
+  {
+    "stack": "vue", "description": "Vue 3 with Composition API and Script Setup",
+    "setup": ["Use Vite for project scaffolding", "Pinia for state management", "Vue Router for SPA routing"],
+    "components": {
+      "button": "Single File Component with <script setup lang='ts'>, props for variant/size",
+      "modal": "<Teleport to='body'> with transition wrapper",
+      "form": "v-model with Zod validation via @vueuse/integrations",
+      "card": "Scoped CSS with slotted content areas",
+      "navbar": "Composition API with reactive state, transition for mobile menu",
+      "table": "Computed properties for sorting/filtering, scoped styles"
+    },
+    "patterns": ["Composables for reusable logic", "Provide/Inject for deep prop passing", "Slots for component composition", "KeepAlive for preserving component state"],
+    "accessibility": ["Built-in transition components support reduced-motion", "Scoped styles prevent CSS conflicts", "aria attributes bound with v-bind"]
+  },
+  {
+    "stack": "nuxt", "description": "Nuxt.js with auto-imports and file-based routing",
+    "setup": ["npx nuxi init with TypeScript, Tailwind, Pinia", "Pages/ directory for routing", "Composables/ for shared logic"],
+    "components": {
+      "button": "Auto-imported component, defineProps for variants",
+      "modal": "NuxtLayout for persistent overlays, Teleport for rendering",
+      "form": "v-model with server-side validation via useFetch",
+      "card": "NuxtLazyImage for lazy-loaded images",
+      "navbar": "useState for persistent nav state across pages",
+      "table": "Server-side sorting with useFetch, client-side with computed"
+    },
+    "patterns": ["Auto-imported components and composables", "Server routes for API endpoints", "Middleware for route protection", "SSG or SSR per page via route rules"],
+    "accessibility": ["Built-in SEO features with useHead", "NuxtImage with built-in optimization", "Static generation reduces JS payload"]
+  },
+  {
+    "stack": "svelte", "description": "Svelte with reactive declarations and stores",
+    "setup": ["npx sv create with SvelteKit, TypeScript, Tailwind", "$lib/ aliases for shared code", "Stores for state management"],
+    "components": {
+      "button": "Reactive props with $: declarations, CSS directly in component",
+      "modal": "svelte:portal for teleporting, transitions for enter/leave",
+      "form": "bind:value for two-way binding, actions for validation",
+      "card": "Slot-based content distribution",
+      "navbar": "Reactive $count store for state, transitions for mobile nav",
+      "table": "{#each} blocks with reactive sorting"
+    },
+    "patterns": ["Stores for shared state", "Actions for DOM element behavior", "Transitions for animations", "Module scripts for non-reactive code"],
+    "accessibility": ["Smaller bundle size improves performance", "Reactive declarations simplify state management", "Built-in transition system supports reduced-motion"]
+  },
+  {
+    "stack": "astro", "description": "Astro with islands architecture and zero-JS by default",
+    "setup": ["npm create astro@latest with TypeScript", "Add Tailwind via astro add tailwind", "UI framework components as needed (React, Vue, Svelte)"],
+    "components": {
+      "button": "Astro component (no JS by default), client:load directive if interactive",
+      "modal": "Islands architecture with client:visible for on-demand loading",
+      "form": "Server endpoints for form handling, ViewTransitions for SPA-like nav",
+      "card": "Pure HTML/CSS Astro component, zero JS overhead",
+      "navbar": "Astro component with client:media for mobile interaction",
+      "table": "Static HTML table, client:load for interactive sorting"
+    },
+    "patterns": ["Islands architecture for minimal JS", "Content collections for type-safe content", "ViewTransitions for page transitions", "Hybrid rendering per route"],
+    "accessibility": ["Zero-JS by default reduces accessibility barriers", "Built-in image optimization", "Streaming HTML for faster first paint"]
+  },
+  {
+    "stack": "html-tailwind", "description": "Static HTML with Tailwind CSS",
+    "setup": ["Use Tailwind CDN or CLI build", "Single HTML file or multi-page HTML structure", "Alpine.js for minimal interactivity if needed"],
+    "components": {
+      "button": "<button class='px-4 py-2 rounded-md font-medium transition-colors'> with Tailwind classes",
+      "modal": "Fixed position overlay with Tailwind classes, vanilla JS toggle",
+      "form": "Native form validation, Tailwind styles for states",
+      "card": "<div class='rounded-xl border p-6 shadow-sm bg-white'>",
+      "navbar": "<nav class='fixed top-0 w-full bg-white/80 backdrop-blur z-50'>",
+      "table": "<table class='w-full text-left'> with Tailwind responsive utilities"
+    },
+    "patterns": ["Utility-first CSS with Tailwind", "Mobile-first responsive design", "CSS custom properties for theming", "Progressive enhancement with vanilla JS"],
+    "accessibility": ["Write semantic HTML first, style second", "Native form validation built-in", "No JavaScript dependency for basic functionality"]
+  },
+  {
+    "stack": "shadcn-ui", "description": "shadcn/ui components with Radix primitives and Tailwind",
+    "setup": ["npx shadcn-ui@latest init", "Component installation via npx shadcn-ui@latest add", "Uses Radix UI + Tailwind + class-variance-authority"],
+    "components": {
+      "button": "npx shadcn-ui@latest add button → <Button variant='default|destructive|outline|ghost'>",
+      "modal": "npx shadcn-ui@latest add dialog → <Dialog> with <DialogTrigger> and <DialogContent>",
+      "form": "npx shadcn-ui@latest add form → react-hook-form + zod integration",
+      "card": "npx shadcn-ui@latest add card → <Card> with <CardHeader>, <CardContent>, <CardFooter>",
+      "navbar": "Custom with Radix NavigationMenu or simple Tailwind nav",
+      "table": "npx shadcn-ui@latest add table → <Table> with sortable headers"
+    },
+    "patterns": ["Install only needed components", "Customize via className prop or UI config", "Dark mode via next-themes or next/dark-mode", "Form validation with Zod schemas"],
+    "accessibility": ["All shadcn/ui components are WCAG-compliant via Radix", "Focus management built-in", "Keyboard navigation included"]
+  },
+  {
+    "stack": "angular", "description": "Angular with standalone components and signals",
+    "setup": ["ng new with standalone components, routing, SCSS", "Use Angular Material for component library", "Signal-based state management"],
+    "components": {
+      "button": "Standalone component with @Input() for variant, HostBinding for classes",
+      "modal": "Angular Material Dialog or CDK Portal",
+      "form": "Reactive Forms with Angular Material form fields and custom validators",
+      "card": "Standalone component with ng-content for transclusion",
+      "navbar": "Standalone component with Angular Router LinkActive",
+      "table": "Angular Material Table with matSort and matPaginator"
+    },
+    "patterns": ["Standalone components (no NgModules)", "Signals for reactive state", "Route guards for auth", "Lazy loading for feature modules"],
+    "accessibility": ["Angular Material components are WCAG-compliant", "Built-in focus management via CDK", "Aria roles on custom components"]
+  },
+  {
+    "stack": "laravel", "description": "Laravel with Blade, Livewire or Inertia.js",
+    "setup": ["composer create-project laravel/laravel", "Laravel Breeze or Jetstream for auth scaffolding", "Tailwind CSS included via Laravel default"],
+    "components": {
+      "button": "Blade component with props: <x-button variant='primary'> with Tailwind classes",
+      "modal": "Livewire: $toggleModal or Alpine.js x-show with transitions",
+      "form": "Laravel Form Request validation with Blade error directives or Livewire validation",
+      "card": "Blade component with slots: <x-card> <x-slot:header>",
+      "navbar": "Blade layout component with sections and stacks",
+      "table": "Blade loop with Tailwind styling, Livewire for sorting/pagination"
+    },
+    "patterns": ["Blade components for reusable UI", "Livewire for dynamic interfaces without writing JS", "Eloquent ORM with eager loading for performance", "Queue jobs for slow operations"],
+    "accessibility": ["Blade produces static HTML by default", "Livewire updates are accessible with proper ARIA", "Built-in CSRF and XSS protection"]
+  },
+  {
+    "stack": "swiftui", "description": "SwiftUI for iOS/macOS/watchOS applications",
+    "setup": ["Xcode project with SwiftUI lifecycle", "iOS 17+ deployment target", "SF Symbols for icons"],
+    "components": {
+      "button": "Button(action:) { Label(title, systemImage:) } with .buttonStyle(.borderedProminent)",
+      "modal": ".sheet(isPresented:) modifier with detents for partial sheets",
+      "form": "Form view with Section groupings, @FocusState for keyboard navigation",
+      "card": "VStack with .background(.ultraThinMaterial) and .clipShape(RoundedRectangle)",
+      "navbar": "NavigationStack with .toolbar for navigation items",
+      "table": "List view with sections, .searchable() for search"
+    },
+    "patterns": ["MVVM with @Observable classes", "ViewModifier for reusable styling", "Previews for component development", "SwiftData for persistence"],
+    "accessibility": ["Dynamic Type support built-in", "VoiceOver works with standard controls", "Reduce Motion API supported", "Accessibility modifiers for custom views"]
+  },
+  {
+    "stack": "jetpack-compose", "description": "Jetpack Compose for Android applications",
+    "setup": ["Android Studio with Compose compiler", "Material3 design library", "Accompanist for utility composables"],
+    "components": {
+      "button": "Button(onClick:) { Text() } or OutlinedButton with Material3 theming",
+      "modal": "AlertDialog or ModalBottomSheet from Material3",
+      "form": "OutlinedTextField with keyboardOptions and visualTransformation",
+      "card": "Card(modifier:) with elevation and shape parameters",
+      "navbar": "NavigationBar with NavigationBarItem for bottom nav",
+      "table": "LazyColumn with stickyHeader for table-like layouts"
+    },
+    "patterns": ["State hoisting for unidirectional data flow", "ViewModel + StateFlow for state management", "Navigation Compose for routing", "Hilt for dependency injection"],
+    "accessibility": ["Content descriptions for Image composables", "Focus handling with focusRequester", "Semantics modifiers for custom composables", "TalkBack support built-in"]
+  },
+  {
+    "stack": "react-native", "description": "React Native for iOS and Android cross-platform",
+    "setup": ["npx react-native init with TypeScript", "Expo for easier development and deployment", "React Navigation for routing"],
+    "components": {
+      "button": "Pressable or TouchableOpacity with styled Text, use react-native-paper or native-base",
+      "modal": "<Modal> from react-native with animationType prop",
+      "form": "TextInput with keyboardType, react-hook-form for form management",
+      "card": "<View> with StyleSheet, shadow props (iOS) and elevation (Android)",
+      "navbar": "@react-navigation/bottom-tabs and @react-navigation/native-stack",
+      "table": "FlatList with stickyHeaderIndices for table-like layouts"
+    },
+    "patterns": ["StyleSheet.create for performance", "Platform-specific code with .ios/.android extensions", "Animated API for animations", "AsyncStorage or MMKV for local storage"],
+    "accessibility": ["accessibilityLabel on interactive elements", "accessibilityRole for custom components", "Dynamic Type via allowFontScaling", "Screen reader support via aria props"]
+  },
+  {
+    "stack": "flutter", "description": "Flutter for cross-platform mobile, web, and desktop",
+    "setup": ["flutter create with TypeScript-like Dart", "Material3 (Material You) design", "Provider or Riverpod for state management"],
+    "components": {
+      "button": "ElevatedButton, OutlinedButton, or TextButton with styleFrom() theming",
+      "modal": "showDialog() or showModalBottomSheet() with Material3 design",
+      "form": "TextFormField with Form widget and GlobalKey<FormState> validation",
+      "card": "Card widget with elevation, shape, clipBehavior properties",
+      "navbar": "NavigationBar (Material3) with NavigationDestination items",
+      "table": "DataTable with sortable columns or custom layout with ListView"
+    },
+    "patterns": ["Widget composition over inheritance", "setState or Riverpod for state management", "ThemeData for consistent theming", "Routes and Navigator 2.0 for navigation"],
+    "accessibility": ["Semantics widget for screen reader support", "MediaQuery for text scaling", "Contrast and size values from ThemeData", "Built-in platform accessibility support"]
+  }
+]

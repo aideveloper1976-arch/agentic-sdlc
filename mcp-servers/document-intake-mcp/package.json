@@ -1,0 +1,29 @@
+{
+  "name": "@agentic-sdlc/document-intake-mcp",
+  "version": "0.1.0",
+  "description": "Document Intake MCP server for processing local requirements, research, and evidence documents.",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test 'test/**/*.test.ts'"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "dotenv": "^16.4.7",
+    "mammoth": "^1.12.0",
+    "xlsx": "^0.18.5",
+    "papaparse": "^5.5.2",
+    "pdf-parse": "^1.1.1",
+    "zod": "^3.24.4",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/uuid": "^10.0.0",
+    "@types/pdf-parse": "^1.1.4",
+    "@types/papaparse": "^5.5.2"
+  },
+  "private": true,
+  "license": "MIT"
+}

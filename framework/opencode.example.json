@@ -1,0 +1,447 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "AGENTS.md"
+  ],
+  "model": "anthropic/claude-sonnet-4-5",
+  "small_model": "ollama/llama3.1:8b",
+  "agent": {
+    "master-orchestrator": {
+      "description": "Coordinates the full AI SDLC workflow across research, backlog, build, test, UX, security, GitHub, release, monitoring and traceability.",
+      "model": "anthropic/claude-opus-4-5",
+      "permission": {
+        "task": {
+          "*": "deny",
+          "market-researcher": "allow",
+          "product-analyst": "allow",
+          "story-writer": "allow",
+          "architect": "allow",
+          "backend-dev": "allow",
+          "frontend-dev": "allow",
+          "code-reviewer": "allow",
+          "test-engineer": "allow",
+          "ux-reviewer": "allow",
+          "security-reviewer": "allow",
+          "traceability-recorder": "allow",
+          "release-manager": "allow",
+          "confluence-writer": "allow",
+          "document-analyst": "allow",
+          "build": "allow",
+          "plan": "allow"
+        },
+        "edit": "ask",
+        "bash": {
+          "*": "ask",
+          "pwd": "allow",
+          "ls*": "allow",
+          "cat *": "allow",
+          "find *": "allow",
+          "grep *": "allow",
+          "mkdir*": "allow",
+          "cd*": "allow",
+          "tail *": "allow",
+          "head *": "allow",
+          "rg*": "allow",
+          "sort*": "allow",
+          "echo*": "allow",
+          "dir*": "allow",
+          "type*": "allow",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "git branch*": "allow",
+          "git add*": "allow",
+          "git commit*": "allow",
+          "git checkout*": "ask",
+          "git stash*": "ask",
+          "git push*": "ask",
+          "npm test*": "allow",
+          "npm ls*": "allow",
+          "npm run test*": "allow",
+          "npm run build*": "allow",
+          "npm run lint*": "allow",
+          "npm run typecheck*": "allow",
+          "npx prisma*": "allow",
+          "npx tsc*": "allow",
+          "npx jest*": "allow",
+          "npm install*": "ask",
+          "npx run*": "ask",
+          "pnpm test*": "allow",
+          "pnpm run test*": "allow",
+          "pnpm run build*": "allow",
+          "pnpm run lint*": "allow",
+          "pnpm run typecheck*": "allow",
+          "pnpm install*": "ask",
+          "yarn test*": "allow",
+          "yarn build*": "allow",
+          "yarn lint*": "allow",
+          "yarn install*": "ask",
+          "pytest*": "allow",
+          "python -m pytest*": "allow",
+          "go test*": "allow",
+          "node*": "ask",
+          "lsof *": "allow",
+          "docker ps*": "allow",
+          "docker context ls*": "allow",
+          "docker context show*": "allow",
+          "docker compose ps*": "allow",
+          "docker compose logs*": "allow",
+          "docker compose *": "ask",
+          "docker inspect*": "allow",
+          "docker exec*": "ask",
+          "docker context use*": "ask",
+          "docker compose build*": "allow",
+          "docker compose up*": "allow",
+          "docker compose down*": "allow",
+          "rm *": "deny",
+          "rm -rf*": "deny",
+          "sudo *": "deny",
+          "powershell*": "deny",
+          "curl *|*bash*": "deny",
+          "wget *|*bash*": "deny",
+          "docker system prune*": "deny",
+          "docker rm*": "deny",
+          "docker rmi*": "deny"
+        }
+      }
+    },
+    "build": {
+      "mode": "primary",
+      "description": "Builds and implements code changes across the stack, coordinates build tasks, and ensures compilation and build pipeline success.",
+      "model": "anthropic/claude-sonnet-4-5",
+      "permission": {
+        "bash": {
+          "*": "ask",
+          "pwd": "allow",
+          "ls*": "allow",
+          "cat *": "allow",
+          "find *": "allow",
+          "grep *": "allow",
+          "mkdir*": "allow",
+          "cd*": "allow",
+          "tail *": "allow",
+          "head *": "allow",
+          "rg*": "allow",
+          "sort*": "allow",
+          "echo*": "allow",
+          "dir*": "allow",
+          "type*": "allow",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "git branch*": "allow",
+          "git add*": "allow",
+          "git commit*": "allow",
+          "git checkout*": "ask",
+          "git stash*": "ask",
+          "git push*": "ask",
+          "npm test*": "allow",
+          "npm ls*": "allow",
+          "npm run test*": "allow",
+          "npm run build*": "allow",
+          "npm run lint*": "allow",
+          "npm run typecheck*": "allow",
+          "npx prisma*": "allow",
+          "npx tsc*": "allow",
+          "npx jest*": "allow",
+          "npm install*": "ask",
+          "npx run*": "ask",
+          "pnpm test*": "allow",
+          "pnpm run test*": "allow",
+          "pnpm run build*": "allow",
+          "pnpm run lint*": "allow",
+          "pnpm run typecheck*": "allow",
+          "pnpm install*": "ask",
+          "yarn test*": "allow",
+          "yarn build*": "allow",
+          "yarn lint*": "allow",
+          "yarn install*": "ask",
+          "pytest*": "allow",
+          "python -m pytest*": "allow",
+          "go test*": "allow",
+          "node*": "ask",
+          "lsof *": "allow",
+          "docker ps*": "allow",
+          "docker context ls*": "allow",
+          "docker context show*": "allow",
+          "docker compose ps*": "allow",
+          "docker compose logs*": "allow",
+          "docker compose *": "ask",
+          "docker inspect*": "allow",
+          "docker exec*": "ask",
+          "docker context use*": "ask",
+          "docker compose build*": "allow",
+          "docker compose up*": "allow",
+          "docker compose down*": "allow",
+          "rm *": "deny",
+          "rm -rf*": "deny",
+          "sudo *": "deny",
+          "powershell*": "deny",
+          "curl *|*bash*": "deny",
+          "wget *|*bash*": "deny",
+          "docker system prune*": "deny",
+          "docker rm*": "deny",
+          "docker rmi*": "deny"
+        }
+      }
+    },
+    "plan": {
+      "mode": "primary",
+      "description": "Plans implementation steps, breaks down work into tasks, and coordinates build order and dependencies.",
+      "model": "anthropic/claude-sonnet-4-5",
+      "permission": {
+        "bash": {
+          "*": "ask",
+          "pwd": "allow",
+          "ls*": "allow",
+          "cat *": "allow",
+          "find *": "allow",
+          "grep *": "allow",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "git branch*": "allow",
+          "npm test*": "allow",
+          "npm run test*": "allow",
+          "npm run lint*": "allow",
+          "npm run typecheck*": "allow",
+          "pnpm test*": "allow",
+          "pnpm run test*": "allow",
+          "pnpm run lint*": "allow",
+          "pnpm run typecheck*": "allow",
+          "yarn test*": "allow",
+          "yarn lint*": "allow",
+          "pytest*": "allow",
+          "python -m pytest*": "allow",
+          "go test*": "allow",
+          "lsof *": "allow",
+          "docker ps*": "allow",
+          "docker context ls*": "allow",
+          "docker context show*": "allow",
+          "docker compose ps*": "allow",
+          "docker compose logs*": "allow",
+          "rm *": "deny",
+          "rm -rf*": "deny",
+          "sudo *": "deny"
+        }
+      }
+    }
+  },
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "http://localhost:11434/v1"
+      },
+      "models": {
+        "llama3.1:8b": {},
+        "qwen2.5:14b": {},
+        "qwen2.5:72b": {}
+      }
+    }
+  },
+  "mcp": {
+    "browser_research": {
+      "type": "local",
+      "command": [
+        "node",
+        "./mcp-servers/browser-research-mcp/dist/index.js"
+      ],
+      "environment": {
+        "SEARXNG_URL": "{env:SEARXNG_URL}",
+        "SEARXNG_BACKUP_URL": "{env:SEARXNG_BACKUP_URL}",
+        "BROWSER_HEADLESS": "true",
+        "EVIDENCE_DIR": "{env:EVIDENCE_DIR}",
+        "BROWSER_TIMEOUT_MS": "30000"
+      },
+      "enabled": true
+    },
+    "traceability": {
+      "type": "local",
+      "command": [
+        "node",
+        "./mcp-servers/traceability-mcp/dist/index.js"
+      ],
+      "environment": {
+        "TRACEABILITY_DB_PATH": "{env:TRACEABILITY_DB_PATH}",
+        "TRACEABILITY_REPORT_DIR": "{env:TRACEABILITY_REPORT_DIR}",
+        "ATLASSIAN_SITE_URL": "{env:ATLASSIAN_SITE_URL}",
+        "ATLASSIAN_EMAIL": "{env:ATLASSIAN_EMAIL}",
+        "ATLASSIAN_API_TOKEN": "{env:ATLASSIAN_API_TOKEN}",
+        "JIRA_PROJECT_KEY": "{env:JIRA_PROJECT_KEY}",
+        "JIRA_BASE_URL": "{env:JIRA_BASE_URL}",
+        "JIRA_ENABLED": "false",
+        "CONFLUENCE_BASE_URL": "{env:CONFLUENCE_BASE_URL}",
+        "CONFLUENCE_SPACE_KEY": "{env:CONFLUENCE_SPACE_KEY}",
+        "CONFLUENCE_ENABLED": "false",
+        "SYNC_MODE": "manual",
+        "SYNC_INTERVAL_SECONDS": "300"
+      },
+      "enabled": true
+    },
+    "security": {
+      "type": "local",
+      "command": [
+        "node",
+        "./mcp-servers/security-mcp/dist/index.js"
+      ],
+      "environment": {
+        "TRIVY_PATH": "{env:TRIVY_PATH}",
+        "GITLEAKS_PATH": "{env:GITLEAKS_PATH}",
+        "PIP_AUDIT_PATH": "{env:PIP_AUDIT_PATH}",
+        "PROJECT_ROOT": "{env:PROJECT_ROOT}",
+        "EVIDENCE_DIR": "{env:EVIDENCE_DIR}",
+        "TRACEABILITY_MCP_URL": "{env:TRACEABILITY_MCP_URL}",
+        "TRACEABILITY_MCP_TOKEN": "{env:TRACEABILITY_MCP_TOKEN}"
+      },
+      "enabled": true
+    },
+    "test_automation": {
+      "type": "local",
+      "command": [
+        "node",
+        "./mcp-servers/test-automation-mcp/dist/index.js"
+      ],
+      "environment": {
+        "BASE_URL": "{env:BASE_URL}",
+        "ALLOWED_DOMAINS": "{env:ALLOWED_DOMAINS}",
+        "DEFAULT_TIMEOUT_MS": "30000",
+        "NAVIGATION_MAX_DEPTH": "5",
+        "HEADLESS": "true",
+        "SCREENSHOT_DIR": "{env:SCREENSHOT_DIR}",
+        "EVIDENCE_DIR": "{env:EVIDENCE_DIR}"
+      },
+      "enabled": true
+    },
+    "web_downloader": {
+      "type": "local",
+      "command": [
+        "node",
+        "./mcp-servers/web-downloader-mcp/dist/index.js"
+      ],
+      "environment": {
+        "ALLOWED_DOMAINS": "{env:ALLOWED_DOMAINS}",
+        "MAX_FILE_SIZE": "52428800",
+        "DOWNLOAD_TIMEOUT_MS": "30000",
+        "DOWNLOAD_DIR": "{env:DOWNLOAD_DIR}",
+        "BLOCKED_EXTENSIONS": ".exe,.dll,.so,.dylib,.bat,.cmd,.ps1,.sh,.app,.msi,.jar,.class"
+      },
+      "enabled": true
+    },
+    "document_intake": {
+      "type": "local",
+      "command": [
+        "node",
+        "./mcp-servers/document-intake-mcp/dist/index.js"
+      ],
+      "environment": {
+        "DOCUMENT_INTAKE_ROOT": "{env:DOCUMENT_INTAKE_ROOT}",
+        "DOCUMENT_EVIDENCE_DIR": "{env:DOCUMENT_EVIDENCE_DIR}",
+        "DOCUMENT_REQUIREMENTS_DIR": "{env:DOCUMENT_REQUIREMENTS_DIR}",
+        "DOCUMENT_RESEARCH_DIR": "{env:DOCUMENT_RESEARCH_DIR}",
+        "MAX_DOCUMENT_SIZE_MB": "50",
+        "MAX_EXTRACTED_CHARS": "200000"
+      },
+      "enabled": true
+    },
+    "code_execution": {
+      "type": "local",
+      "command": [
+        "node",
+        "./mcp-servers/code-execution-mcp/dist/index.js"
+      ],
+      "environment": {
+        "CODE_EXECUTION_ALLOWED_DIR": "{env:CODE_EXECUTION_ALLOWED_DIR}",
+        "CODE_EXECUTION_TIMEOUT_MS": "60000",
+        "CODE_EXECUTION_MAX_OUTPUT_CHARS": "10000",
+        "CODE_EXECUTION_DOCKER_ENABLED": "true"
+      },
+      "enabled": true
+    },
+    "monitoring": {
+      "type": "local",
+      "command": [
+        "node",
+        "./mcp-servers/monitoring-mcp/dist/index.js"
+      ],
+      "environment": {
+        "NODE_ENV": "development",
+        "LOG_MAX_LINES": "200",
+        "LOG_MAX_SIZE": "1048576",
+        "METRICS_INTERVAL": "30000",
+        "ALERTS_DIR": "{env:ALERTS_DIR}",
+        "REPORTS_DIR": "{env:REPORTS_DIR}",
+        "EVIDENCE_DIR": "{env:EVIDENCE_DIR}",
+        "ALLOWED_SERVICES": "{env:ALLOWED_SERVICES}",
+        "DOCKER_ENABLED": "true",
+        "HEALTH_TIMEOUT": "5000",
+        "ANOMALY_CPU_HIGH": "80",
+        "ANOMALY_MEMORY_HIGH": "85",
+        "ANOMALY_ERROR_SPIKE": "10",
+        "ANOMALY_SLOW_RESPONSE": "3000",
+        "ANOMALY_RESTART_COUNT": "3"
+      },
+      "enabled": true
+    },
+    "ux_hci": {
+      "type": "local",
+      "command": [
+        "node",
+        "./mcp-servers/ux-hci-mcp/dist/index.js"
+      ],
+      "environment": {
+        "ALLOWED_DOMAINS": "{env:ALLOWED_DOMAINS}",
+        "HEADLESS": "true",
+        "EVIDENCE_PATH": "{env:EVIDENCE_PATH}",
+        "PORT": "3000"
+      },
+      "enabled": true
+    },
+    "ux_intelligence": {
+      "type": "local",
+      "command": [
+        "node",
+        "./mcp-servers/ux-intelligence-mcp/dist/index.js"
+      ],
+      "environment": {
+        "UX_DATA_DIR": "{env:UX_DATA_DIR}"
+      },
+      "enabled": true
+    },
+    "github": {
+      "type": "local",
+      "command": [
+        "node",
+        "./mcp-servers/github-mcp/dist/index.js"
+      ],
+      "environment": {
+        "GITHUB_TOKEN": "{env:GITHUB_TOKEN}",
+        "GITHUB_OWNER": "{env:GITHUB_OWNER}",
+        "GITHUB_REPO": "{env:GITHUB_REPO}"
+      },
+      "enabled": true
+    },
+    "atlassian_custom": {
+      "type": "local",
+      "command": [
+        "node",
+        "./mcp-servers/atlassian-mcp/build/index.js"
+      ],
+      "environment": {
+        "ATLASSIAN_BASE_URL": "{env:ATLASSIAN_BASE_URL}",
+        "ATLASSIAN_EMAIL": "{env:ATLASSIAN_EMAIL}",
+        "ATLASSIAN_API_TOKEN": "{env:ATLASSIAN_API_TOKEN}"
+      },
+      "enabled": false
+    },
+    "playwright": {
+      "type": "local",
+      "command": [
+        "npx",
+        "@playwright/mcp@latest",
+        "--headless"
+      ],
+      "enabled": true
+    }
+  }
+}

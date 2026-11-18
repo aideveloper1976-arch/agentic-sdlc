@@ -1,0 +1,15 @@
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.traceability/
+evidence/
+tmp/
+coverage/
+.DS_Store
+framework/.opencode/agents/dynamic/
+framework/.opencode/plugins/.routing-cache.json
+opencode.json

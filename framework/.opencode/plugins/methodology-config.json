@@ -1,0 +1,58 @@
+{
+  "name": "methodology-engine",
+  "version": "1.0.0",
+  "tdd": {
+    "strictness": "hardcore",
+    "overrides": {
+      "allow-prototype": false,
+      "allow-reference-on-first-task": false,
+      "delete-before-retype": true
+    }
+  },
+  "execution": {
+    "max_concurrent_subagents": 10,
+    "retry_limit": 3
+  },
+  "models": {
+    "providers": {
+      "ollama": {
+        "host": "http://localhost:11434",
+        "enabled": true
+      },
+      "openai": {
+        "enabled": true,
+        "apiKeyEnv": "OPENAI_API_KEY"
+      },
+      "deepseek": {
+        "enabled": true,
+        "apiKeyEnv": "DEEPSEEK_API_KEY"
+      }
+    },
+    "profiles": {
+      "default": {
+        "orchestrator": { "provider": "deepseek", "model": "deepseek-v4-flash" },
+        "implementer": {
+          "mechanical": { "provider": "deepseek", "model": "deepseek-v4-flash" },
+          "standard": { "provider": "deepseek", "model": "deepseek-v4-flash" },
+          "complex": { "provider": "deepseek", "model": "deepseek-v4-flash" }
+        },
+        "reviewer": {
+          "spec": { "provider": "deepseek", "model": "deepseek-v4-flash" },
+          "quality": { "provider": "deepseek", "model": "deepseek-v4-flash" }
+        }
+      },
+      "local-only": {
+        "orchestrator": { "provider": "ollama", "model": "auto" },
+        "implementer": {
+          "mechanical": { "provider": "ollama", "capability": "fast" },
+          "standard": { "provider": "ollama", "capability": "code-capable" },
+          "complex": { "provider": "ollama", "capability": "reasoning" }
+        },
+        "reviewer": {
+          "spec": { "provider": "ollama", "capability": "fast" },
+          "quality": { "provider": "ollama", "capability": "code-capable" }
+        }
+      }
+    }
+  }
+}
