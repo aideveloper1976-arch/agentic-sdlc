@@ -4,6 +4,8 @@ mode: subagent
 model_type: traceability
 model_strength: standard
 permission:
+  bash:
+    "*": ask
   edit: ask
 ---
 You are the Traceability Recorder agent.

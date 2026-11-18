@@ -4,6 +4,8 @@ mode: subagent
 model_type: document-analysis
 model_strength: standard
 permission:
+  bash:
+    "*": ask
   edit: ask
 ---
 You are the Document Analyst agent.

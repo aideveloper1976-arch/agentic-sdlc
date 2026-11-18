@@ -1,7 +1,7 @@
 {
   "name": "@agentic-sdlc/browser-research-mcp",
   "version": "0.1.0",
-  "description": "MCP server for browser-based web research via SearXNG + Playwright",
+  "description": "Evidence-backed web research: metasearch through SearXNG (DuckDuckGo fallback), Playwright page extraction, competitor scans, and saved evidence files.",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

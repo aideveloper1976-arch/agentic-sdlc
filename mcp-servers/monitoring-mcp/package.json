@@ -1,7 +1,7 @@
 {
   "name": "@agentic-sdlc/monitoring-mcp",
   "version": "0.1.0",
-  "description": "Production-grade Monitoring MCP server for OpenCode - service health, logs, metrics, anomaly detection, and alerting",
+  "description": "Post-release checks: service and API health, Docker status, log search, metrics, threshold-based anomaly detection and alerts.",
   "main": "dist/index.js",
   "type": "module",
   "bin": {

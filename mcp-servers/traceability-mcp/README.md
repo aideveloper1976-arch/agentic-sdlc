@@ -1,4 +1,26 @@
-# Traceability MCP Server
+# Traceability MCP server
+
+> A SQLite traceability graph from research to EPIC, feature, story, code, test and release, with evidence records, gap detection and optional Jira/Confluence sync.
+
+| | |
+|---|---|
+| Package | `@agentic-sdlc/traceability-mcp` |
+| Tools | 11 ([full list](../../docs/tool-catalog.md#traceability-mcp)) |
+| Transport | MCP over stdio |
+| Key dependencies | `@modelcontextprotocol/sdk`, `better-sqlite3`, `zod` |
+| Configuration | [`.env.example`](.env.example) |
+| Tests | 4 unit tests in [`test/`](test), plus the [MCP smoke test](../../scripts/mcp-smoke.mjs) |
+
+**Run it from the repo root**
+
+```bash
+npm ci && npm run build
+node mcp-servers/traceability-mcp/dist/index.js
+```
+
+Part of [Agentic SDLC](../../README.md). The rest of this page is the server's detailed reference.
+
+---
 
 An MCP server for managing end-to-end delivery traceability across Idea → Research → EPIC → Feature → Story → Code → Test → UX Review → Security Review → Release.
 

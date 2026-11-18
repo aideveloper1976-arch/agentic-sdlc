@@ -4,6 +4,8 @@ mode: subagent
 model_type: product-analysis
 model_strength: complex
 permission:
+  bash:
+    "*": ask
   edit: ask
   webfetch: allow
 ---

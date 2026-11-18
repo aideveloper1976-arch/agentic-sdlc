@@ -1,7 +1,7 @@
 {
   "name": "@agentic-sdlc/test-automation-mcp",
   "version": "0.1.0",
-  "description": "MCP server for automated end-to-end testing, visual regression, accessibility checks, and UX validation",
+  "description": "Browser verification for the regression and UAT phases: Playwright E2E flows, scripted UAT sessions with evidence, visual regression, axe accessibility audits, network and console inspection.",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

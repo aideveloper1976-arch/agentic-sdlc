@@ -1,33 +1,39 @@
-# Browser Pool
+# Browser pool
 
-Internal shared library — **not a standalone MCP server**. Provides a reusable pool of headless Chromium browser/context instances so `browser-research-mcp`, `test-automation-mcp`, and `ux-hci-mcp` don't each spin up their own browser process.
+> One shared headless Chromium process with isolated, labelled browser contexts for Playwright-based tools.
 
-## What this is
+| | |
+|---|---|
+| Package | `@agentic-sdlc/browser-pool` |
+| Type | Library (not an MCP server) |
+| Entry point | `src/browser-pool.ts`, exports `BrowserPool` |
+| Dependencies | `playwright` |
 
-- Runtime: Node.js + TypeScript
-- Entry point: `src/browser-pool.ts` (exports `BrowserPool`)
-- Consumed as a local dependency by other tools in this collection, not run directly
+## Why
 
-## Install and build
+Browser-driven tools are slow to start and memory-hungry when each one launches its own
+Chromium. `BrowserPool` is a process-wide singleton that launches Chromium once and hands out
+an isolated context and page per label, so callers share the browser without sharing state.
 
-```bash
-cd browser-pool
-npm install
-npm run build   # if a build script exists; otherwise consumed as TS source
-```
+## Status
 
-## Usage (as a library)
+The browser-driven servers in this repo (`browser-research-mcp`, `test-automation-mcp`,
+`ux-hci-mcp`) still manage their own Playwright instances. Moving them onto this pool is a
+planned refactor.
+
+## Usage
 
 ```ts
-import { BrowserPool } from "../browser-pool/src/browser-pool";
+import { BrowserPool } from "@agentic-sdlc/browser-pool";
 
-const pool = new BrowserPool({ maxInstances: 3, headless: true });
-const page = await pool.acquire();
-// ... use page ...
-await pool.release(page);
+const pool = BrowserPool.getInstance({ headless: true, viewport: { width: 1280, height: 720 } });
+const { page } = await pool.acquire("homepage-check");
+try {
+  await page.goto("https://example.com");
+} finally {
+  await pool.release("homepage-check");
+}
+await pool.shutdown(); // on process exit
 ```
 
-## Notes
-
-- No environment variables of its own — consuming tools (`browser-research-mcp`, `test-automation-mcp`, `ux-hci-mcp`) configure headless mode and timeouts via their own env vars, which they pass through to the pool.
-- If you're looking for a directly-callable MCP server for browser automation, use `playwright-mcp` (general-purpose) or `test-automation-mcp` (E2E/UAT-focused) instead.
+Build with the rest of the repo: `npm ci && npm run build` from the root.

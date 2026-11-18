@@ -1,4 +1,26 @@
-# Test Automation MCP Server
+# Test Automation MCP server
+
+> Browser verification for the regression and UAT phases: Playwright E2E flows, scripted UAT sessions with evidence, visual regression, axe accessibility audits, network and console inspection.
+
+| | |
+|---|---|
+| Package | `@agentic-sdlc/test-automation-mcp` |
+| Tools | 20 ([full list](../../docs/tool-catalog.md#test-automation-mcp)) |
+| Transport | MCP over stdio |
+| Key dependencies | `@axe-core/playwright`, `@modelcontextprotocol/sdk`, `pixelmatch`, `playwright`, `sharp`, `zod` |
+| Configuration | [`.env.example`](.env.example) |
+| Tests | 9 unit tests in [`test/`](test), plus the [MCP smoke test](../../scripts/mcp-smoke.mjs) |
+
+**Run it from the repo root**
+
+```bash
+npm ci && npm run build
+node mcp-servers/test-automation-mcp/dist/index.js
+```
+
+Part of [Agentic SDLC](../../README.md). The rest of this page is the server's detailed reference.
+
+---
 
 An MCP server for automated end-to-end browser testing, visual regression detection, accessibility auditing, and UX flow validation.
 

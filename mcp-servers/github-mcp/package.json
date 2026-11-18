@@ -1,7 +1,7 @@
 {
   "name": "@agentic-sdlc/github-mcp",
   "version": "0.1.0",
-  "description": "GitHub Model Context Protocol Server for OpenCode",
+  "description": "Repository, branch, commit, pull request, issue and workflow operations for the release phase, including linking PRs back to stories.",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

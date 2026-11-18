@@ -1,6 +1,28 @@
-# @opencode/security-mcp
+# Security MCP server
 
-Production-grade Security MCP server for [OpenCode](https://opencode.ai). Provides SAST, dependency scanning, secrets detection, API security analysis, and evidence generation for enterprise environments.
+> Security review gate: dependency audit (npm, pip-audit, Trivy), secret detection (gitleaks plus built-in patterns), code and auth-flow checks, API security and a consolidated report.
+
+| | |
+|---|---|
+| Package | `@agentic-sdlc/security-mcp` |
+| Tools | 8 ([full list](../../docs/tool-catalog.md#security-mcp)) |
+| Transport | MCP over stdio |
+| Key dependencies | `@modelcontextprotocol/sdk`, `zod`, `execa` |
+| Configuration | [`.env.example`](.env.example) |
+| Tests | 2 unit tests in [`test/`](test), plus the [MCP smoke test](../../scripts/mcp-smoke.mjs) |
+
+**Run it from the repo root**
+
+```bash
+npm ci && npm run build
+node mcp-servers/security-mcp/dist/index.js
+```
+
+Part of [Agentic SDLC](../../README.md). The rest of this page is the server's detailed reference.
+
+---
+
+Security MCP server for [OpenCode](https://opencode.ai). Provides SAST, dependency scanning, secrets detection, API security analysis, and evidence generation.
 
 ## Safety
 

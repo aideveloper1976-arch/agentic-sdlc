@@ -4,6 +4,8 @@ mode: subagent
 model_type: ux-review
 model_strength: standard
 permission:
+  bash:
+    "*": ask
   edit: ask
   webfetch: allow
 ---

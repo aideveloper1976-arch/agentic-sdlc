@@ -1,6 +1,28 @@
-# Monitoring MCP Server
+# Monitoring MCP server
 
-A production-grade Monitoring MCP server for OpenCode that enables AI agents to monitor services, collect logs and metrics, detect anomalies, and manage alerts.
+> Post-release checks: service and API health, Docker status, log search, metrics, threshold-based anomaly detection and alerts.
+
+| | |
+|---|---|
+| Package | `@agentic-sdlc/monitoring-mcp` |
+| Tools | 13 ([full list](../../docs/tool-catalog.md#monitoring-mcp)) |
+| Transport | MCP over stdio |
+| Key dependencies | `@modelcontextprotocol/sdk`, `execa`, `zod` |
+| Configuration | [`.env.example`](.env.example) |
+| Tests | covered by the [MCP smoke test](../../scripts/mcp-smoke.mjs) only; no unit tests yet |
+
+**Run it from the repo root**
+
+```bash
+npm ci && npm run build
+node mcp-servers/monitoring-mcp/dist/index.js
+```
+
+Part of [Agentic SDLC](../../README.md). The rest of this page is the server's detailed reference.
+
+---
+
+A monitoring MCP server for OpenCode that enables AI agents to monitor services, collect logs and metrics, detect anomalies, and manage alerts.
 
 ## Overview
 

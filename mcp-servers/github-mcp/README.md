@@ -1,6 +1,28 @@
-# GitHub MCP Server
+# GitHub MCP server
 
-A production-grade [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server for GitHub that enables AI agents to interact with repositories, manage pull requests, analyse diffs, track work items, and trigger CI/CD workflows.
+> Repository, branch, commit, pull request, issue and workflow operations for the release phase, including linking PRs back to stories.
+
+| | |
+|---|---|
+| Package | `@agentic-sdlc/github-mcp` |
+| Tools | 16 ([full list](../../docs/tool-catalog.md#github-mcp)) |
+| Transport | MCP over stdio |
+| Key dependencies | `@modelcontextprotocol/sdk`, `undici`, `zod` |
+| Configuration | [`.env.example`](.env.example) |
+| Tests | covered by the [MCP smoke test](../../scripts/mcp-smoke.mjs) only; no unit tests yet |
+
+**Run it from the repo root**
+
+```bash
+npm ci && npm run build
+node mcp-servers/github-mcp/dist/index.js
+```
+
+Part of [Agentic SDLC](../../README.md). The rest of this page is the server's detailed reference.
+
+---
+
+A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server for GitHub that enables AI agents to interact with repositories, manage pull requests, analyse diffs, track work items, and trigger CI/CD workflows.
 
 ## Features
 

@@ -1,7 +1,7 @@
 {
   "name": "@agentic-sdlc/ux-intelligence-mcp",
   "version": "0.1.0",
-  "description": "MCP server providing UX design intelligence \u2014 design system generation, UX guidelines, color palettes, typography, accessibility checks, and stack-specific guidance across 15 frameworks.",
+  "description": "Design guidance from a searchable data set: generates a design system for a product type, and returns palettes, typography, guidelines, anti-patterns and WCAG contrast checks.",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

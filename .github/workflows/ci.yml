@@ -28,6 +28,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run test:framework
+      - name: MCP smoke test (every server boots and lists its tools)
+        run: npm run smoke
       - name: Installer scripts parse
         run: |
           bash -n installer/scripts/install.sh

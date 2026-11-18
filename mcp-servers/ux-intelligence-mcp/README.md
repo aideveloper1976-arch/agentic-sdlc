@@ -1,4 +1,26 @@
-# UX Intelligence MCP
+# Ux Intelligence MCP server
+
+> Design guidance from a searchable data set: generates a design system for a product type, and returns palettes, typography, guidelines, anti-patterns and WCAG contrast checks.
+
+| | |
+|---|---|
+| Package | `@agentic-sdlc/ux-intelligence-mcp` |
+| Tools | 10 ([full list](../../docs/tool-catalog.md#ux-intelligence-mcp)) |
+| Transport | MCP over stdio |
+| Key dependencies | `@modelcontextprotocol/sdk`, `zod` |
+| Configuration | none required |
+| Tests | 8 unit tests in [`test/`](test), plus the [MCP smoke test](../../scripts/mcp-smoke.mjs) |
+
+**Run it from the repo root**
+
+```bash
+npm ci && npm run build
+node mcp-servers/ux-intelligence-mcp/dist/index.js
+```
+
+Part of [Agentic SDLC](../../README.md). The rest of this page is the server's detailed reference.
+
+---
 
 Design-system intelligence server: a searchable local database of UI styles, color palettes, typography pairings, product-type guidelines, accessibility rules, and anti-patterns — used to ground UI/UX design decisions instead of guessing.
 

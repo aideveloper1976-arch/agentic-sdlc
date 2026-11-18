@@ -1,6 +1,28 @@
-# Code Execution MCP Server
+# Code Execution MCP server
 
-Secure, production-grade MCP server for running development commands, executing tests, managing Docker environments, and inspecting project state.
+> Lets agents run builds, tests and Docker Compose safely: an allowlist of commands and subcommands, blocked destructive patterns, timeouts and output caps.
+
+| | |
+|---|---|
+| Package | `@agentic-sdlc/code-execution-mcp` |
+| Tools | 13 ([full list](../../docs/tool-catalog.md#code-execution-mcp)) |
+| Transport | MCP over stdio |
+| Key dependencies | `@modelcontextprotocol/sdk`, `execa`, `zod` |
+| Configuration | [`.env.example`](.env.example) |
+| Tests | 5 unit tests in [`test/`](test), plus the [MCP smoke test](../../scripts/mcp-smoke.mjs) |
+
+**Run it from the repo root**
+
+```bash
+npm ci && npm run build
+node mcp-servers/code-execution-mcp/dist/index.js
+```
+
+Part of [Agentic SDLC](../../README.md). The rest of this page is the server's detailed reference.
+
+---
+
+An MCP server for running development commands, executing tests, managing Docker environments, and inspecting project state.
 
 ## Security Model
 

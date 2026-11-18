@@ -50,7 +50,7 @@ Each lifecycle phase MUST be executed by its designated agent, not by manually w
 | 6 | Architecture Review | `architect` | Review data model, API contracts, component integration, security, produce ADRs. Use `graphify query_graph` for impact analysis to validate cross-module dependencies. **Generate architecture sign-off package at `docs/sdlc-runs/<run>/ARCHITECTURE_SIGN_OFF.md` — blocks Phase 7 (Implementation Plan) until human approves** |
 | 7 | Implementation Plan | `architect` | Define build order, files to create/modify, dependencies. **Only runs after Architecture sign-off is approved** |
 | 8 | Build (API) | `backend-dev` | Implement Prisma models, services, API routes, seed data |
-| 8 | Build (Web) | `frontend-dev` | Implement wizard UI, result page, answer controls, stepper, and wire new UI into the correct role-based navigation so users can discover it. Download Stitch reference screenshots via `stitch_download_assets` and extract design tokens for Tailwind theme configuration. Implement components manually against downloaded reference images. |
+| 8 | Build (Web) | `frontend-dev` | Implement the UI for the story and wire it into the correct role-based navigation so users can discover it. Download Stitch reference screenshots via `stitch_download_assets` and extract design tokens for Tailwind theme configuration. Implement components manually against downloaded reference images. |
 | 9 | Developer Self-Verification | `backend-dev` / `frontend-dev` | Verify touched code paths before handoff; fix and rerun failed checks before leaving build |
 | 10 | Automated Code Regression | `test-engineer` | Run typecheck, lint, build, unit, integration, API, and regression checks; separate product bugs from environment failures |
 | 11 | Browser UI Regression | `test-engineer` | **Run real browser-based validation before code review for UI changes**: authenticate, execute changed flows and global regression matrix journeys, capture screenshots, run accessibility scans, and save evidence |
@@ -81,9 +81,9 @@ If any screenshot shows the login page instead of the target feature page, the B
 
 1. **Phase 4 (`story-writer`):** Must create EPICs/Features/Stories in the configured Jira project, not just a local markdown file. If the agent times out generating all stories at once, break into one agent call per EPIC. Use the template-first approach: write structure first, then fill acceptance criteria per EPIC.
 
-2. **Phase 16 (`release-manager`):** Must do the full GitHub workflow: stage files → commit on feature branch → push → create PR. This is NOT a documentation-only phase. The PR must link Jira issue keys in its description. This phase must not start while blocking code, browser, UX, security, or traceability gates remain open.
+2. **Phase 17 (`release-manager`):** Must do the full GitHub workflow: stage files → commit on feature branch → push → create PR. This is NOT a documentation-only phase. The PR must link Jira issue keys in its description. This phase must not start while blocking code, browser, UX, security, or traceability gates remain open.
 
-3. **Phase 18 (`confluence-writer`):** Must publish to Confluence space, not just write a local file. If the configured space (e.g. PROD) is not found, use the first available space.
+3. **Phase 19 (`confluence-writer`):** Must publish to Confluence space, not just write a local file. If the configured space (e.g. PROD) is not found, use the first available space.
 
 4. **Never shortcut:** Do not replace agent execution with writing a local document. If a checkpoint file already exists, that means the agent was launched successfully. If not, the phase is incomplete.
 

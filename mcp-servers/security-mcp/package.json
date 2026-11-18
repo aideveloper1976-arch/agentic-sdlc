@@ -1,7 +1,7 @@
 {
   "name": "@agentic-sdlc/security-mcp",
   "version": "0.1.0",
-  "description": "Production-grade Security MCP server for OpenCode \u2014 SAST, secrets detection, dependency scanning, API security, and evidence generation",
+  "description": "Security review gate: dependency audit (npm, pip-audit, Trivy), secret detection (gitleaks plus built-in patterns), code and auth-flow checks, API security and a consolidated report.",
   "private": true,
   "type": "module",
   "bin": {

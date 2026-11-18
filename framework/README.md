@@ -1,445 +1,169 @@
-# Framework reference
+# Framework
 
-This document describes the complete development methodology framework . It covers the plugin system, MCP servers, agents, skills, and commands that coordinate AI-assisted software development from idea to release.
+The framework is the part you copy into a project. It turns OpenCode into an orchestrated
+delivery team: one orchestrator, 14 specialist subagents, 9 slash commands, 40 skills,
+and a plugin that routes each agent to an appropriate model.
 
----
+- **Install:** copy `.opencode/` and `AGENTS.md` into your project and start from
+  [`opencode.example.json`](opencode.example.json). See [getting started](../docs/getting-started.md).
+- **How a run flows:** [lifecycle](../docs/sdlc-lifecycle.md) · **Why it's built this way:** [ADRs](../docs/adr/)
 
-## Table of Contents
+## Contents
 
-- [Architecture Overview](#architecture-overview)
-- [Plugin System](#plugin-system)
-- [MCP Servers](#mcp-servers)
-- [Agents](#agents)
-- [Project Skills](#project-skills)
-- [Methodology Skills](#methodology-skills)
-- [Commands](#commands)
-- [Configuration](#configuration)
-- [Workflow Examples](#workflow-examples)
-- [Troubleshooting](#troubleshooting)
-
----
-
-## Architecture Overview
-
-```
-OpenCode Session
-     │
-     ├── opencode.json ─── Config (MCPs, agents, providers, permissions)
-     │
-     ├── Plugin ─── methodology-engine.js
-     │     ├── Model discovery (from OpenCode config)
-     │     ├── Capability-profiled routing table
-     │     ├── Bootstrap injection (skill-first enforcement)
-     │     ├── Session compaction hints
-     │     └── Dynamic agent factory
-     │
-     ├── MCP Servers ─── 13 domain-specific tools
-     │     ├── Traceability, Security, Testing, Browser Research
-     │     ├── UX/HCI, UX Intelligence, Monitoring
-     │     ├── Atlassian (Jira + Confluence), GitHub
-     │     └── Code Execution, Web Downloader, Document Intake
-     │
-     ├── Agents ─── 15 specialized roles
-     │     ├── Master orchestrator (primary)
-     │     ├── 14 subagents (research, build, review, release)
-     │     └── Dynamic agents (generated on demand)
-     │
-     ├── Skills ─── 26 knowledge modules
-     │     ├── 14 methodology skills (portable, process-focused)
-     │     └── 12 project skills (domain-specific)
-     │
-     └── Commands ─── 7 workflow triggers
-           ├── /run-full-sdlc, /build-story, /fix-issue
-           ├── /discover-and-write-backlog, /traceability-check
-           ├── /continue-sdlc, /compact-session
+```text
+framework/
+├── .opencode/
+│   ├── plugins/
+│   │   ├── methodology-engine.js     OpenCode plugin entry point
+│   │   ├── methodology-config.json   TDD strictness, execution limits, routing profiles
+│   │   └── lib/
+│   │       ├── model-router.js       discovery, agent assignment, role table, cache
+│   │       ├── model-profiler.js     capability-tier classification
+│   │       └── agent-factory.js      dynamic agent generator (library; not yet wired in)
+│   ├── agents/      15 agent definitions
+│   ├── commands/    9 slash commands
+│   └── skills/      methodology, role and alias skills
+├── AGENTS.md                 phase rules, gates and agent launch rules (loaded as instructions)
+├── opencode.example.json     models, agents and MCP servers; secrets via {env:VAR}
+└── test/                     profiler, router, agent-factory and end-to-end routing tests
 ```
 
----
+## The plugin
 
-## Plugin System
+`methodology-engine.js` registers three OpenCode hooks:
 
-The `methodology-engine.js` plugin is auto-discovered by OpenCode from `.opencode/plugins/`. It hooks into the OpenCode lifecycle to provide:
+| Hook | What it does |
+|---|---|
+| `config` | Registers the methodology skills path and **assigns a model to every agent** (see [model routing](../docs/model-routing.md)). |
+| `experimental.chat.messages.transform` | Prepends a bootstrap to the first user message: skill-first rules, TDD mode, the role routing table, agent model assignments and execution limits. Guarded so it is injected once. |
+| `experimental.session.compacting` | Adds the methodology rules and `AGENTS.md` pointer to the context kept through compaction. |
 
-### Auto-Trigger Bootstrap
+`methodology-config.json`:
 
-On every session start, the plugin injects a bootstrap message into the first user message. This bootstrap tells the agent:
-
-- Check for relevant skills BEFORE every action
-- TDD strictness level (hardcore by default)
-- Red flags that indicate rationalization
-- Tool mapping for OpenCode equivalents
-- Available methodology skills index
-
-The bootstrap is cached after the first load and a **guard marker** (`EXTREMELY_IMPORTANT`) prevents double injection on subsequent message transforms.
-
-### Model Discovery & Routing
-
-The plugin reads the models configured in OpenCode (`model`, `small_model`, `provider.<id>.models`, `agent.<name>.model`) and classifies each into a capability tier. It does not call provider APIs. Agent frontmatter `model:` values are treated as preferences: they win only when that model is actually configured.
-
-Routing happens in two places:
-
-1. **Agent assignments (this is what changes which model runs).** In OpenCode's `config` hook the plugin sets `cfg.agent[name].model` for every agent. Each agent's `model_strength` sets the weakest tier it may use (`complex` → code-review or better, `standard` → fast-local or better; `model_type: orchestration` → reasoning only), and among the models that qualify it picks the cheapest: local Ollama first, then DeepSeek, GPT, Gemini, Claude, and within a provider the least capable model that still qualifies.
-2. **The routing table** for orchestrator / implementer / reviewer roles, built from the profile in `methodology-config.json` and shown to the agent in the first message.
-
-| Tier | Label | Typical Models |
-|------|-------|---------------|
-| `reasoning` | Complex reasoning | gpt-5.x, o1, o3, Claude Opus, DeepSeek pro/reasoner, Gemini pro, 70B+ local |
-| `code-review` | Code review | gpt-4.x, Claude Sonnet, 14B+ local |
-| `code-capable` | Standard implementation | gpt-4.1-mini, Claude Haiku, DeepSeek, Gemini flash, mixtral |
-| `fast-local` | Simple TDD tasks | llama3.1-8b, qwen2.5-7b |
-| `fast` | Fast inference | Any local model, mini variants |
-
-Classified models populate a **routing table**:
-```
-| Task Type               | Model Selected         |
-|-------------------------|------------------------|
-| Orchestrator            | gpt-5.5 (remote)       |
-| Implementer (mechanical)| llama3.1:8b (local)    |
-| Implementer (standard)  | gpt-4.1-mini (remote)  |
-| Implementer (complex)   | qwen2.5:72b (local)    |
-| Spec Reviewer           | llama3.1:8b (local)    |
-| Quality Reviewer        | qwen2.5:14b (local)    |
-```
-
-The table is cached in `.opencode/plugins/.routing-cache.json` and rebuilt only when the configured model set changes (SHA-256 hash of the model list). It is shown in the first message for visibility; there is no interactive accept/reject step yet.
-
-Verified end to end with OpenCode 1.19.6 against a stub model server: with Opus, Sonnet, Haiku and a local Llama 3.1 8B configured, `master-orchestrator` ran on Opus, `architect` on Sonnet and `story-writer` on the local 8B model. See `framework/test/routing-e2e.test.mjs`.
-
-### Session Compacting
-
-The plugin registers critical context strings with OpenCode's compaction system, ensuring methodology rules, AGENTS.md references, and project structure are preserved when the session is compacted.
-
-### Dynamic Agent Factory
-
-`lib/agent-factory.js` can generate a temporary agent definition for a task no predefined agent covers. It is a tested library but is **not yet wired to a plugin hook or command**, so OpenCode never calls it on its own. Generated agents:
-- Persist to `.opencode/agents/dynamic/` for cross-session reuse
-- Use the same task description hash → same agent (avoid duplicates)
-- Select the correct model tier from the routing table
-- Include retry context when re-dispatched
-
-### Configuration
-
-The plugin reads `.opencode/plugins/methodology-config.json`:
-
-```json
-{
-  "tdd": {
-    "strictness": "hardcore",
-    "overrides": { "allow-prototype": false, "allow-reference-on-first-task": false, "delete-before-retype": true }
-  },
-  "execution": {
-    "max_concurrent_subagents": 10,
-    "retry_limit": 3
-  },
-  "models": {
-    "providers": {
-      "ollama": { "host": "http://localhost:11434", "enabled": true },
-      "openai": { "enabled": true, "apiKeyEnv": "OPENAI_API_KEY" }
-    },
-    "profiles": { "default": {...}, "local-only": {...} }
-  }
-}
-```
-
-**Plugin files:**
-
-| File | Purpose |
-|------|---------|
-| `.opencode/plugins/methodology-engine.js` | Main plugin — lifecycle hooks, bootstrap injection, compaction |
-| `.opencode/plugins/methodology-config.json` | User-editable config (TDD, execution, models) |
-| `.opencode/plugins/lib/model-router.js` | Model discovery, capability profiling, routing table |
-| `.opencode/plugins/lib/model-profiler.js` | Model tier classification (5 tiers, metadata-based) |
-| `.opencode/plugins/lib/agent-factory.js` | Dynamic agent generation with persistence |
-
----
-
-## MCP Servers
-
-All MCP servers are configured in `opencode.json` under the `mcp` section. Each is a local Node.js process using the `@modelcontextprotocol/sdk`.
-
-| MCP ID | Tool Namespace | Source | Purpose |
-|--------|---------------|--------|---------|
-| `browser_research` | `browser_research_*` | `mcp-servers/browser-research-mcp/` | Web search, page extraction, competitor scanning |
-| `traceability` | `traceability_*` | `mcp-servers/traceability-mcp/` | Entity tracking, evidence recording, gap reports |
-| `security` | `security_*` | `mcp-servers/security-mcp/` | Dependency scanning, secret detection, code security |
-| `test_automation` | `test_automation_*` | `mcp-servers/test-automation-mcp/` | E2E browser testing, screenshots, visual regression |
-| `web_downloader` | `web_downloader_*` | `mcp-servers/web-downloader-mcp/` | URL content download and extraction |
-| `document_intake` | `document_intake_*` | `mcp-servers/document-intake-mcp/` | Document parsing, text/table extraction |
-| `code_execution` | `code_execution_*` | `mcp-servers/code-execution-mcp/` | Command execution, project diagnostics |
-| `monitoring` | `monitoring_*` | `mcp-servers/monitoring-mcp/` | Service health, logs, metrics, alerts |
-| `ux_hci` | `ux_hci_*` | `mcp-servers/ux-hci-mcp/` | UX analysis, accessibility checks, form analysis |
-| `ux_intelligence` | `ux_*` | `mcp-servers/ux-intelligence-mcp/` | Design system generation, palettes, typography, WCAG |
-| `github` | `github_*` | `mcp-servers/github-mcp/` | GitHub API (PRs, issues, repos) |
-| `atlassian` | `atlassian_*` | Remote (Atlassian MCP) | Jira and Confluence via Atlassian's hosted MCP |
-| `atlassian_custom` | `atlassian_custom_*` | `mcp-servers/atlassian-mcp/` | Custom Atlassian integration with local build |
-
-### UX Intelligence MCP (ux-intelligence-mcp)
-
-Located at `mcp-servers/ux-intelligence-mcp/`, provides 10 tools for data-driven UX design:
-
-| Tool | Input | Output |
-|------|-------|--------|
-| `ux_generate_design_system` | `productType`, `platform?`, `mood?`, `pageType?` | Complete design system (style, colors, typography, effects, anti-patterns, checklist) |
-| `ux_search_guidelines` | `query`, `priority?`, `category?`, `limit?` | Ranked UX guidelines with checks and anti-patterns |
-| `ux_get_palette` | `industry`, `mood?` | Color palette with hex codes and usage roles |
-| `ux_get_typography` | `mood`, `industry?` | Font pairing with scale and Google Fonts import URL |
-| `ux_get_style` | `productType` | Style recommendation with effects and best-for |
-| `ux_check_accessibility` | `foreground`, `background`, `fontSize?` | WCAG ratio with AA/AAA pass/fail |
-| `ux_get_anti_patterns` | `industry?`, `style?` | Anti-patterns to avoid |
-| `ux_get_stack_guidelines` | `stack`, `component?` | Framework-specific component guidance (14 stacks) |
-| `ux_list_product_types` | `query?`, `category?` | All 161 product types |
-| `ux_list_styles` | `category?` | All 67 design styles |
-
-**Data:** 7 JSON files — 67 styles, 161 product types, 19 palettes, 20 typography pairings, 99 UX guidelines, 29 anti-patterns, 14 stack guides.
-
----
+| Key | Default | Purpose |
+|---|---|---|
+| `tdd.strictness` | `hardcore` | In hardcore mode, code written before a failing test must be deleted |
+| `execution.max_concurrent_subagents` | `10` | Parallel subagents per batch |
+| `execution.retry_limit` | `3` | Attempts before escalating to the user |
+| `models.activeProfile` | `default` | Which role-routing profile to use |
+| `models.profiles` | `default`, `local-only` | Capability requirements per role |
 
 ## Agents
 
-Agents are defined in `.opencode/agents/`. Each has a frontmatter block specifying mode, model, and permissions, followed by a system prompt.
+Each agent is a Markdown file: frontmatter for mode, capability needs and permissions, then its
+system prompt. Edits always ask; shell commands ask unless explicitly allowed (e.g. `git status`,
+test runners).
 
-### Primary Agent
-
-| Agent | Model | Purpose |
-|-------|-------|---------|
-| `master-orchestrator` | `openai/gpt-5.5` | Coordinates the full SDLC. Dispatches phases as subagents. Manages context across 18-phase workflows. |
-
-### Subagents
-
-| Agent | Model | Purpose |
-|-------|-------|---------|
-| `market-researcher` | `openai/gpt-4.1-mini` | Industry research, competitor analysis, regulatory landscape |
-| `document-analyst` | `openai/gpt-4.1-mini` | PDF/DOCX/XLSX extraction, requirement analysis |
-| `product-analyst` | `openai/gpt-4.1-mini` | USP definition, FRs/NFRs, UX acceptance criteria |
-| `story-writer` | `anthropic/claude-haiku-4-5` | EPIC → Feature → Story backlog with acceptance criteria |
-| `architect` | `openai/gpt-5.1-codex` | System design, data models, API contracts |
-| `backend-dev` | `openai/gpt-5.1-codex` | Backend implementation, services, Prisma, API routes |
-| `frontend-dev` | `openai/gpt-5.1-codex` | Frontend implementation, components, UI flows |
-| `code-reviewer` | `openai/gpt-4.1-mini` | Code review, pattern correctness, merge risk |
-| `test-engineer` | `openai/gpt-4.1-mini` | Typecheck, lint, unit, integration, e2e, browser regression |
-| `ux-reviewer` | `anthropic/claude-sonnet-4-5` | Usability, accessibility, auth UX, responsive behavior |
-| `security-reviewer` | `openai/gpt-4.1-mini` | Dependency scan, secret scan, code security, API security |
-| `release-manager` | `openai/gpt-4.1-mini` | GitHub PR, release readiness, rollout, monitoring |
-| `traceability-recorder` | `openai/gpt-4.1-mini` | Audit trail, entity tracking, gap reports |
-| `confluence-writer` | Project-level agent | Confluence page CRUD and publishing |
-
-### Dynamic Agents
-
-Agents generated on demand by the plugin's `AgentFactory` when no predefined agent matches the task. Persist to `.opencode/agents/dynamic/<hash>.md`. Same task hash = same agent reuse.
-
----
-
-## Project Skills
-
-Located in `.opencode/skills/`. Domain-specific skills  lifecycle.
-
-| Skill | Purpose |
-|-------|---------|
-| `idea-discovery` | Frame business hypotheses, discovery briefs, open execution chain |
-| `fullstack-business-analyst` | Requirements analysis, Jira alignment, scope refinement |
-| `fullstack-solution-architect` | Build-ready architecture, API contracts, data models |
-| `fullstack-typescript-developer` | Production-grade implementation, refactoring, navigation wiring |
-| `fullstack-tester-reviewer` | Multi-layer test validation, ship decisions |
-| `fullstack-security-reviewer` | Dependency, secret, code, API security scanning |
-| `fullstack-code-reviewer` | Structured code review, merge-risk analysis |
-| `fullstack-git-commit-tracker` | Commit preparation aligned to tracking and changelog |
-| `github-pr-management` | Branch push, PR creation, checks review, merge readiness |
-| `browser-research` | Evidence-based external research and competitor analysis |
-| `confluence-writer` | Structured Confluence page creation and updates |
-| `document-intake` | Requirement and evidence extraction from source documents |
-| `epic-feature-story-writing` | EPIC → Feature → Story backlog authoring with Jira sync |
-| `langgraph-ai-developer` | AI agent/workflow implementation with LangGraph. Covers supervisor/sub-agent topology, tool-based handoff, parallel execution, shared state, human-in-the-loop |
-| `monitoring-review` | Runtime health, logs, metrics, anomaly review |
-| `release-management` | PR quality, release notes, release readiness |
-| `sprint-planner` | Sprint planning, prioritization, capacity tradeoffs |
-| `traceability-validation` | Lifecycle traceability gap analysis |
-| `ux-review` | UX, usability, accessibility evidence review |
-
-**Aliases (backward compatibility):**
-- `product-analysis` → `fullstack-business-analyst`
-- `architecture-design` → `fullstack-solution-architect`
-- `implementation` → `fullstack-typescript-developer`
-- `testing` → `fullstack-tester-reviewer`
-- `security-review` → `fullstack-security-reviewer`
-
----
-
-## Methodology Skills
-
-Located in `.opencode/skills/methodology/`. Portable, process-focused skills that can be used in any project. These are auto-registered by the plugin's `config` hook.
-
-### Core Workflow Chain
-
-```
-brainstorming → writing-plans → subagent-driven-development → finishing-a-development-branch
-                                   ↕
-                             test-driven-development
-                                   ↕
-                              executing-plans
-```
-
-| Skill | When to Use | What It Does |
-|-------|-------------|-------------|
-| `using-framework` | Session start (auto-loaded) | Bootstrap — establishes skill-first behavior, model routing confirmation, red flags |
-| `brainstorming` | Before any creative/implementation work | Refines ideas into designs through structured dialogue. Explores context, proposes approaches, writes design doc |
-| `writing-plans` | With an approved design | Breaks work into 2-5 minute tasks with exact file paths, complete code, verification steps. Supports dependency declarations for parallel execution |
-| `test-driven-development` | Always during implementation | Enforces RED-GREEN-REFACTOR. Hardcore mode (default): code before failing test must be deleted. Configurable strictness |
-| `subagent-driven-development` | When executing a plan with independent tasks | Dispatches fresh subagent per task. Parallel batch dispatch for independent tasks. Two-stage review (spec compliance then code quality). Auto-retry with model escalation. Dynamic agent fallback |
-| `executing-plans` | Lightweight alternative for coupled tasks | Executes plan inline without subagent dispatch. Batch checkpoints for user review |
-
-### Debugging & Fixing
-
-| Skill | When to Use | What It Does |
-|-------|-------------|-------------|
-| `systematic-debugging` | When diagnosing a bug or failure | 4-phase process: reproduce → hypothesize → isolate → fix & verify. Write failing test before changing code |
-| `verification-before-completion` | After applying a fix | Confirms the fix actually resolves the issue. Runs reproduction test, full suite, documents evidence |
-| `fix-issue` command | Bug fix workflow | Shortcut combining systematic-debugging + TDD + verification + accidental-removal check |
-
-### Code Review
-
-| Skill | When to Use | What It Does |
-|-------|-------------|-------------|
-| `requesting-code-review` | Before asking for a review | Pre-submission checklist: tests pass, no debug artifacts, error paths tested, no security red flags |
-| `receiving-code-review` | When responding to review feedback | How to classify comments (correctness / design / style / question / suggestion), respond, and apply changes |
-
-### Branch Management
-
-| Skill | When to Use | What It Does |
-|-------|-------------|-------------|
-| `using-git-worktrees` | When working on parallel branches | Creates isolated working directory per branch. Shares .git directory. Clean teardown |
-| `finishing-a-development-branch` | When implementation is complete | Final verification, commit review, push. Presents options: merge to main / create PR / keep / discard |
-
-### Quality Governance
-
-| Skill | When to Use | What It Does |
-|-------|-------------|-------------|
-| `writing-skills` | When creating or modifying methodology skills | Structure guidelines, content anti-patterns, testing checklist. Self-reference handling for modifications to itself |
-| `ux-skills` | When a task involves UI/UX decisions | Maps design scenarios to specific `ux_intelligence` MCP tools. Provides workflow: generate design system → stack guidelines → anti-patterns → implement → verify accessibility |
-
----
+| Agent | Mode | Model tier it gets | Responsibility |
+|---|---|---|---|
+| [`architect`](.opencode/agents/architect.md) | subagent | code-review or better | Designs architecture, APIs, data model, integrations, security, observability, deployment, and implementation approach. |
+| [`backend-dev`](.opencode/agents/backend-dev.md) | subagent | code-review or better | Implements backend stories, APIs, services, database logic, migrations, and backend tests. |
+| [`code-reviewer`](.opencode/agents/code-reviewer.md) | subagent | code-review or better | Performs structured code-review gate checks before release, covering correctness, contract drift, tests, docs, and merge risk. |
+| [`document-analyst`](.opencode/agents/document-analyst.md) | subagent | fast-local or better | Reads documents and extracts structured requirements, research evidence, risks, assumptions, and open questions. |
+| [`frontend-dev`](.opencode/agents/frontend-dev.md) | subagent | code-review or better | Implements frontend stories, UI flows, components, forms, state, accessibility hooks, and frontend tests. |
+| [`market-researcher`](.opencode/agents/market-researcher.md) | subagent | fast-local or better | Researches market, competitors, pricing, UX patterns, and feature expectations using evidence. |
+| [`master-orchestrator`](.opencode/agents/master-orchestrator.md) | primary | reasoning | Coordinates the full AI SDLC from idea to research, backlog, UX design, architecture, build, test, UX review, security, release, monitoring, and traceability. |
+| [`product-analyst`](.opencode/agents/product-analyst.md) | subagent | code-review or better | Converts research and documents into product vision, USP, FRs, NFRs, risks, assumptions, dependencies, and EPIC candidates. |
+| [`release-manager`](.opencode/agents/release-manager.md) | subagent | fast-local or better | Prepares GitHub PRs, release notes, CI checks, deployment handoff, monitoring checks, and release readiness. |
+| [`security-reviewer`](.opencode/agents/security-reviewer.md) | subagent | code-review or better | Performs AppSec checks including dependency scans, secret scans, code security, API risks, and container risks. |
+| [`story-writer`](.opencode/agents/story-writer.md) | subagent | fast-local or better | Creates delivery-ready backlog using EPIC → Feature → Story format with acceptance criteria and traceability. |
+| [`test-engineer`](.opencode/agents/test-engineer.md) | subagent | fast-local or better | Runs unit, integration, end-to-end, regression, visual, and evidence-backed tests. |
+| [`traceability-recorder`](.opencode/agents/traceability-recorder.md) | subagent | fast-local or better | Maintains audit trail across idea, research, EPIC, Feature, Story, code, tests, UX, security, PR, release, and monitoring. |
+| [`ui-designer`](.opencode/agents/ui-designer.md) | subagent | code-review or better | Design-system-aware product UI designer that creates consistent, accessible, responsive, implementation-ready web screens matching the existing application style. |
+| [`ux-reviewer`](.opencode/agents/ux-reviewer.md) | subagent | fast-local or better | Reviews usability, HCI quality, accessibility, authentication UX, authorization UX, flow clarity, and visual consistency. |
 
 ## Commands
 
-Commands are defined in `.opencode/commands/` and invoked via `/command-name <args>` in OpenCode.
+| Command | Description |
+|---|---|
+| [`/build-story`](.opencode/commands/build-story.md) | Build, test, review, secure, and trace a single story |
+| [`/compact-session`](.opencode/commands/compact-session.md) | Request session compaction to free context window space for long-running workflows |
+| [`/continue-sdlc`](.opencode/commands/continue-sdlc.md) | Resume SDLC workflow from a specific phase after session capacity was reached |
+| [`/discover-and-write-backlog`](.opencode/commands/discover-and-write-backlog.md) | Research an idea and produce EPIC → Feature → Story backlog |
+| [`/fix-issue`](.opencode/commands/fix-issue.md) | Diagnose an issue, apply a fix with TDD, verify, and commit — without running the full SDLC |
+| [`/quick-change`](.opencode/commands/quick-change.md) | Apply small changes, screen adjustments, or UAT feedback items without running the full SDLC |
+| [`/run-full-sdlc`](.opencode/commands/run-full-sdlc.md) | Run full AI SDLC from idea to release-ready feature without stopping between phases |
+| [`/show-routing`](.opencode/commands/show-routing.md) | Display current model routing, including task-tier routing and OpenCode agent model assignments |
+| [`/traceability-check`](.opencode/commands/traceability-check.md) | Check traceability completeness for a feature, story, or release |
 
-| Command | Trigger | Description | Phases |
-|---------|---------|-------------|--------|
-| `/run-full-sdlc` | Start a new feature | Full SDLC from idea to release | All 18 phases — each dispatched as subagent to conserve context |
-| `/build-story` | Build an existing story | Build, test, review, secure, trace single story | Implementation → verification → review → security → trace |
-| `/fix-issue` | Bug or defect | Diagnose → TDD fix → verify → commit. Skips all pre-build and post-build phases | Systematic debugging → TDD → verification → accidental-removal check → test suite |
-| `/discover-and-write-backlog` | New idea | Research idea, produce backlog | Market research → competitor analysis → USP → EPIC → Feature → Story |
-| `/traceability-check` | Audit | Check traceability completeness | Gap analysis on existing entities |
-| `/continue-sdlc` | Resume mid-flow | Resume from a specific phase after session capacity reached | Reads prior checkpoints from disk, continues from specified phase |
-| `/compact-session` | Free context | Request session compaction when nearing context limit | Triggers OpenCode-built-in compaction |
+## Skills
 
-### Phase Dispatch Pattern (run-full-sdlc)
+Skills are loaded on demand by agents with OpenCode's `skill` tool. The bootstrap requires
+agents to check for a relevant skill before acting.
 
-Each phase is dispatched as a separate subagent to keep the orchestrator's context minimal:
+### Methodology skills (15)
 
-```
-Phase loop:
-  1. Orchestrator calls task(agent_type=<phase-agent>, prompt=phase instructions)
-  2. Subagent executes the phase and writes checkpoint to disk
-  3. Subagent returns "DONE" + checkpoint file path
-  4. Orchestrator records ONE LINE: "Phase N done → <path>"
-  5. Orchestrator continues to next phase
-```
+Portable, process-focused skills. Most are adapted from
+[obra/superpowers](https://github.com/obra/superpowers) (MIT); see
+[THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
 
-The orchestrator never keeps more than one line per phase in its own context.
+| Skill | When to use |
+|---|---|
+| [`brainstorming`](.opencode/skills/methodology/brainstorming/SKILL.md) | Use before any creative work — creating features, building components, adding functionality, or modifying behavior. Refines ideas into designs through structured dialogue before implementation. |
+| [`executing-plans`](.opencode/skills/methodology/executing-plans/SKILL.md) | Use as a lightweight alternative to subagent-driven-development when tasks are tightly coupled or require staying in a single session. Executes plan tasks inline with batch checkpoints. |
+| [`finishing-a-development-branch`](.opencode/skills/methodology/finishing-a-development-branch/SKILL.md) | Use when implementation tasks are complete. Verifies everything is in order and presents branch completion options to the user. |
+| [`receiving-code-review`](.opencode/skills/methodology/receiving-code-review/SKILL.md) | Use when receiving feedback from a code review. Guides how to process, respond to, and act on review comments. |
+| [`requesting-code-review`](.opencode/skills/methodology/requesting-code-review/SKILL.md) | Use before asking for a code review. Runs a pre-review checklist to catch common issues before the reviewer sees the code. |
+| [`stitch-design`](.opencode/skills/methodology/stitch-design/SKILL.md) | Use when the task involves generating, editing, or managing UI designs with Google Stitch — screen design, design system management, design variants, asset download, and frontend implementation using downloaded reference assets. |
+| [`subagent-driven-development`](.opencode/skills/methodology/subagent-driven-development/SKILL.md) | Use when executing an implementation plan with independent tasks. Dispatches fresh subagents per task in parallel batches with two-stage review (spec compliance then code quality), auto-retry with model escalation, and dynamic agent creation. |
+| [`systematic-debugging`](.opencode/skills/methodology/systematic-debugging/SKILL.md) | Use when diagnosing a bug, failure, or unexpected behavior. Follows a 4-phase root cause process before making any changes. |
+| [`test-driven-development`](.opencode/skills/methodology/test-driven-development/SKILL.md) | Use when implementing any feature or bug fix, BEFORE writing implementation code. Enforces RED-GREEN-REFACTOR cycle. |
+| [`using-framework`](.opencode/skills/methodology/using-framework/SKILL.md) | Use at session start to bootstrap the development methodology. Establishes skill-first behavior, model routing confirmation, and process rules before any work begins. |
+| [`using-git-worktrees`](.opencode/skills/methodology/using-git-worktrees/SKILL.md) | Use when working on parallel isolated branches. Creates a separate working directory for each branch. |
+| [`ux-skills`](.opencode/skills/methodology/ux-skills/SKILL.md) | Use when the task involves UI/UX design decisions — building interfaces, choosing styles, selecting colors, implementing components, or checking accessibility. Calls the ux-intelligence MCP for data-driven design guidance. |
+| [`verification-before-completion`](.opencode/skills/methodology/verification-before-completion/SKILL.md) | Use after applying a fix or making a change. Confirms the fix actually resolves the issue before marking complete. |
+| [`writing-plans`](.opencode/skills/methodology/writing-plans/SKILL.md) | Use when you have an approved design or requirements for a multi-step task. Breaks the work into bite-sized implementation tasks with exact file paths, complete code, and verification steps. Supports dependency declarations for parallel execution. |
+| [`writing-skills`](.opencode/skills/methodology/writing-skills/SKILL.md) | Use when creating or modifying methodology skills. Handles self-reference by using external principles when modifying writing-skills itself. |
 
----
+### Role skills (20)
 
-## Configuration
+Used by the specialist agents. Most include `SYSTEM_PROMPT.md`, `TASK_TEMPLATES.md`,
+`OUTPUT_FORMATS.md` and a `CHECKER.md` the agent runs before handing back.
 
-### opencode.json
+| Skill | Purpose |
+|---|---|
+| [`accessibility-testing`](.opencode/skills/accessibility-testing/SKILL.md) | Run WCAG 2.1 AA accessibility and contrast checks on code changes |
+| [`browser-research`](.opencode/skills/browser-research/SKILL.md) | Run evidence-based web, market, and competitor research using browser and search MCP tools. |
+| [`confluence-writer`](.opencode/skills/confluence-writer/SKILL.md) | Create or update Confluence pages with technical documentation, diagrams, embedded specs, and structured page content. |
+| [`document-intake`](.opencode/skills/document-intake/SKILL.md) | Extract requirements, evidence, and structured findings from local documents. |
+| [`epic-feature-story-writing`](.opencode/skills/epic-feature-story-writing/SKILL.md) | Create delivery-ready backlog items in EPIC to Feature to Story form with acceptance criteria and traceability. |
+| [`fullstack-business-analyst`](.opencode/skills/fullstack-business-analyst/SKILL.md) | Convert user requirements into detailed requirement documentation, Jira updates, and traceable delivery scope. |
+| [`fullstack-code-reviewer`](.opencode/skills/fullstack-code-reviewer/SKILL.md) | Perform structured code reviews across application, shared-package, test, and documentation changes. |
+| [`fullstack-git-commit-tracker`](.opencode/skills/fullstack-git-commit-tracker/SKILL.md) | Prepare commits with aligned tracking-log and changelog updates. |
+| [`fullstack-security-reviewer`](.opencode/skills/fullstack-security-reviewer/SKILL.md) | Review full-stack code, dependencies, auth, and runtime posture for evidence-backed security findings. |
+| [`fullstack-solution-architect`](.opencode/skills/fullstack-solution-architect/SKILL.md) | Produce implementation-ready system design, API contracts, state flows, and developer handoff guidance. |
+| [`fullstack-tester-reviewer`](.opencode/skills/fullstack-tester-reviewer/SKILL.md) | Run structured full-stack validation across test layers and return a clear ship decision with evidence. |
+| [`fullstack-typescript-developer`](.opencode/skills/fullstack-typescript-developer/SKILL.md) | Implement production-grade TypeScript changes with strong type safety, testing, contract awareness, and documentation alignment. |
+| [`github-pr-management`](.opencode/skills/github-pr-management/SKILL.md) | Manage branch publish, PR creation, checks review, and merge-readiness updates with Jira linkage. |
+| [`idea-discovery`](.opencode/skills/idea-discovery/SKILL.md) | Frame ideas into evidence-ready discovery briefs and open the execution chain in Jira and Confluence. |
+| [`langgraph-ai-developer`](.opencode/skills/langgraph-ai-developer/SKILL.md) | Implement production-grade AI agents, multi-agent teams, and workflows using LangGraph with type safety, state management, orchestration patterns, testing, and LLM best practices. |
+| [`monitoring-review`](.opencode/skills/monitoring-review/SKILL.md) | Review runtime health, logs, metrics, alerts, and anomalies after testing or release activity. |
+| [`release-management`](.opencode/skills/release-management/SKILL.md) | Prepare pull requests, release notes, rollout evidence, and release readiness decisions. |
+| [`sprint-planner`](.opencode/skills/sprint-planner/SKILL.md) | Review backlog scope, prioritize stories, and produce a realistic sprint plan with explicit risks and capacity tradeoffs. |
+| [`traceability-validation`](.opencode/skills/traceability-validation/SKILL.md) | Validate complete lifecycle traceability from idea and research through build, test, release, and monitoring. |
+| [`ux-review`](.opencode/skills/ux-review/SKILL.md) | Review UX, usability, accessibility, authentication and authorization flow quality for UI changes with evidence-backed findings. |
 
-The main configuration file at the project root controls:
+### Aliases (5)
 
-| Section | Purpose |
-|---------|---------|
-| `instructions` | References `AGENTS.md` which defines the SDLC phase mapping |
-| `agent` | Defines the master-orchestrator's model, permissions, tool access |
-| `provider` | LLM provider configuration (Ollama, OpenAI, Anthropic) with model lists |
-| `model` | Default model for the session |
-| `mcp` | All 13 MCP server registrations with paths and environment variables |
+Short names that point to a canonical role skill.
 
-### methodology-config.json
+| Alias | Points to |
+|---|---|
+| [`architecture-design`](.opencode/skills/architecture-design/SKILL.md) | Alias for fullstack-solution-architect. Use the canonical fullstack-solution-architect skill. |
+| [`implementation`](.opencode/skills/implementation/SKILL.md) | Alias for fullstack-typescript-developer. Use the canonical fullstack-typescript-developer skill. |
+| [`product-analysis`](.opencode/skills/product-analysis/SKILL.md) | Alias for fullstack-business-analyst. Use the canonical fullstack-business-analyst skill. |
+| [`security-review`](.opencode/skills/security-review/SKILL.md) | Alias for fullstack-security-reviewer. Use the canonical fullstack-security-reviewer skill. |
+| [`testing`](.opencode/skills/testing/SKILL.md) | Alias for fullstack-tester-reviewer. Use the canonical fullstack-tester-reviewer skill. |
 
-Plugin-specific configuration at `.opencode/plugins/methodology-config.json`:
+## Tests
 
-| Key | Default | Purpose |
-|-----|---------|---------|
-| `tdd.strictness` | `"hardcore"` | TDD enforcement level |
-| `execution.max_concurrent_subagents` | `10` | Max parallel subagents per batch |
-| `execution.retry_limit` | `3` | Max retry attempts before escalating to user |
-| `models.providers` | ollama + openai | Which providers to probe for model discovery |
-| `models.profiles` | default + local-only | Model routing profiles (set `models.activeProfile` and restart) |
-
-### AGENTS.md
-
-Located at the project root. Defines the 18-phase SDLC lifecycle with:
-- Phase → Agent mapping
-- Critical agent launch rules
-- Gate criteria (minimum evidence per phase, fix-loop requirements)
-- Browser regression requirements for UI changes
-- UI discoverability and role-visibility rules
-
----
-
-## Workflow Examples
-
-### Building a New Feature
-
-```
-User: "/run-full-sdlc Build a customer analytics dashboard"
-
-1. Plugin injects bootstrap → agent loads using-framework
-2. agent presents routing table → user confirms
-3. Phase 1: agent dispatches market-researcher → research complete → "Phase 1 done → checkpoints/01-market-research.md"
-4. Phase 2: agent dispatches market-researcher → competitor analysis
-...
-18. Phase 18: agent dispatches confluence-writer → Confluence published
-```
-
-### Fixing a Bug
-
-```
-User: "/fix-issue Login form doesn't validate email format"
-
-1. Agent loads systematic-debugging → reproduces issue → identifies root cause
-2. Agent writes failing test → confirms it fails
-3. Agent implements fix → confirms test passes
-4. Agent reviews git diff → no accidental removals confirmed
-5. Agent runs full test suite → all green
-6. Agent commits with message referencing the bug
+```bash
+npm run test:framework
 ```
 
-### Designing a UI
-
-```
-User: "Build a landing page for the analytics dashboard"
-
-1. Agent loads brainstorming skill → explores requirements
-2. Agent calls ux_generate_design_system("analytics dashboard", "landing")
-   → Returns: style=Minimalism + Trust, palette=professional blues, typography=Inter
-3. Agent calls ux_get_stack_guidelines("next")
-   → Returns: Next.js App Router patterns, Server/Client component split
-4. Agent presents design → user approves
-5. Agent loads writing-plans → creates task plan
-6. Agent loads subagent-driven-development → dispatches tasks in parallel
-7. Agent loads finishing-a-development-branch → pushes to GitHub
-```
-
----
-
-## Troubleshooting
-
-| Problem | Cause | Fix |
-|---------|-------|-----|
-| "Session too large to compact" | Too many messages across 18 SDLC phases | Use `/fix-issue` for targeted fixes. Use `/continue-sdlc` to resume mid-flow. Each phase is now dispatched as subagent. |
-| No bootstrap injected | Plugin not loaded | Ensure `.opencode/plugins/methodology-engine.js` exists. Restart OpenCode session. |
-| "No models found" | Ollama not running or no API key | Start `ollama serve`. Set `OPENAI_API_KEY`. |
-| Routing table shows "Not available" | No models discovered | Start at least one Ollama model or configure OpenAI provider in `methodology-config.json`. |
-| MCP tools not showing | MCP not registered or not built | Check `opencode.json` for the MCP entry. Run `npm run build` in the MCP directory. |
-| Dynamic agents not generated | Agent factory not initialized | Check `.opencode/plugins/lib/agent-factory.js` exists. Verify plugin loads without errors. |
-| TDD not enforced | Skill not loaded | Agent should auto-load `test-driven-development` during implementation. Confirm bootstrap shows "TDD is required". |
+| File | Covers |
+|---|---|
+| `test/model-profiler.test.mjs` | tier classification for local and hosted models |
+| `test/model-router.test.mjs` | model discovery from config, order-independent model-set hash |
+| `test/agent-factory.test.mjs` | dynamic agent reuse, isolation and `ask` permissions |
+| `test/routing-e2e.test.mjs` | the plugin's real hooks in a throwaway project: per-agent assignment, role table, pins, local flag, loadable exports |

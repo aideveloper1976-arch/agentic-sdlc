@@ -1,7 +1,7 @@
 {
   "name": "@agentic-sdlc/code-execution-mcp",
   "version": "0.1.0",
-  "description": "MCP server for safe code execution, test running, Docker management, and service tracking",
+  "description": "Lets agents run builds, tests and Docker Compose safely: an allowlist of commands and subcommands, blocked destructive patterns, timeouts and output caps.",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

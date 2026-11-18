@@ -1,100 +1,96 @@
 # Architecture
 
-Agentic SDLC has three layers: a **framework** that runs inside an AI coding agent
-(OpenCode, with configs generated for Claude Code, VS Code and Zed), a set of **MCP servers**
-that give the agents real tools, and an **installer** that builds and wires everything up.
+Agentic SDLC has three layers:
+
+1. **Framework**: an OpenCode plugin, agent definitions, slash commands, skills and phase rules
+   that turn a coding assistant into an orchestrated delivery team.
+2. **MCP servers**: twelve TypeScript servers that give the agents deterministic tools.
+3. **Installer**: builds the servers and writes MCP configuration for OpenCode, Claude Code,
+   VS Code and Zed.
+
+## System context
 
 ```mermaid
 flowchart TB
-    U([Developer]) -->|"/run-full-sdlc 'feature'"| O
+    Dev([Developer]) -->|slash commands, approvals| Client
 
-    subgraph FW[framework/ — runs inside OpenCode]
-        P[methodology-engine plugin<br/>bootstrap · model router · compaction hints]
-        O[master-orchestrator<br/>primary agent]
-        A[15 specialist subagents<br/>research · product · UX · architect · backend · frontend<br/>test · code review · security · release · traceability]
-        S[skills<br/>methodology + role skills]
-        P --> O
-        O -->|task per phase| A
-        A -.loads.-> S
+    subgraph Client["OpenCode session"]
+        direction TB
+        Plugin["methodology-engine plugin<br/>• model router (config hook)<br/>• bootstrap + routing table (first message)<br/>• compaction hints"]
+        Orch["master-orchestrator<br/>(primary agent)"]
+        Subs["14 specialist subagents<br/>research · product · stories · UI design · architecture<br/>backend · frontend · tests · UX · code review<br/>security · traceability · release · documents"]
+        Skills["Skills<br/>15 methodology · 20 role · 5 aliases"]
+        Rules["AGENTS.md<br/>phase rules and gates"]
+        Plugin -. assigns models .-> Orch & Subs
+        Rules -. instructions .-> Orch
+        Orch -->|task per phase| Subs
+        Subs -. load .-> Skills
     end
 
-    subgraph MCP[mcp-servers/ — stdio MCP servers]
-        T[traceability]:::m
-        SEC[security]:::m
-        TA[test-automation]:::m
-        UX[ux-hci · ux-intelligence]:::m
-        BR[browser-research · web-downloader]:::m
-        DI[document-intake]:::m
-        CE[code-execution]:::m
-        MO[monitoring]:::m
-        GH[github · atlassian]:::m
+    subgraph Tools["MCP servers (stdio)"]
+        direction LR
+        Q["Quality<br/>security · test-automation<br/>ux-hci · ux-intelligence"]
+        K["Knowledge<br/>traceability · document-intake<br/>browser-research · web-downloader"]
+        X["Execution and delivery<br/>code-execution · monitoring<br/>github · atlassian"]
     end
 
-    A --> MCP
-    T <-->|sync| J[(Jira / Confluence)]
-    GH --> G[(GitHub)]
-    O -->|checkpoint per phase| D[(docs/sdlc-runs/&lt;run&gt;/checkpoints)]
-
-    classDef m fill:#eef,stroke:#88a
+    Subs --> Tools
+    K <-->|optional sync| Atl[(Jira · Confluence)]
+    X --> GH[(GitHub)]
+    Q --> Br[(Chromium via Playwright<br/>Trivy · gitleaks · npm audit)]
+    Subs -->|checkpoints + evidence| Disk[(docs/sdlc-runs/&lt;run&gt;)]
+    Disk -->|sign-off files| Dev
 ```
 
-## The 18-phase lifecycle
+## Key mechanisms
 
+### Phase dispatch
+The orchestrator runs each phase in a fresh subagent and keeps one line per phase
+(`Phase N done → <path>`). This is what lets a long run fit in one session and resume from disk.
+See [ADR 0001](adr/0001-one-subagent-per-phase.md) and the [lifecycle](sdlc-lifecycle.md).
+
+### Evidence and gates
+Quality phases block on findings and route failures to a fix loop. Three human sign-offs
+(design, architecture, UAT) stop the run until approved. The traceability server records the
+links between research, backlog, code, tests and release, and reports gaps.
+See [ADR 0003](adr/0003-evidence-and-human-gates.md).
+
+### Model routing
+In OpenCode's `config` hook the plugin assigns each agent the cheapest configured model that
+meets its capability tier. Verified in a live OpenCode session.
+See [model-routing.md](model-routing.md) and [ADR 0004](adr/0004-capability-tiered-model-routing.md).
+
+### Tools over prompts
+Scans, test runs, contrast maths, document parsing and traceability are MCP tools with
+validated inputs and structured outputs. See [ADR 0002](adr/0002-tools-over-prompts.md) and the
+[tool catalogue](tool-catalog.md).
+
+## MCP server design
+
+Every server follows the same shape:
+
+```text
+mcp-servers/<name>/
+├── src/
+│   ├── index.ts      MCP server: tool definitions (zod schemas) and request handlers
+│   ├── config.ts     environment-driven configuration with safe defaults
+│   ├── types.ts      shared result types
+│   └── <domain>.ts   the actual logic (scanners, parsers, browser flows…)
+├── test/             unit tests (node:test via tsx)
+├── .env.example
+└── README.md
 ```
-Idea → Research → Competitor analysis → USP → EPIC → Feature → Story → UX design
-     → Architecture review → ⏸ human sign-off → Implementation plan → Build
-     → Self-verification → Code regression → Browser UI regression → UX/HCI review
-     → Code review gate → Security review → Traceability gap report → UAT
-     → GitHub PR → Release → Monitoring
-```
 
-Each phase is dispatched by the orchestrator to a fresh subagent. The subagent writes a
-checkpoint file and returns only `DONE <path>`, so the orchestrator's context stays small
-enough to run all phases in one session. `/continue-sdlc` resumes a run from its
-checkpoints after a session ends.
+- **Transport:** stdio, so any MCP client can launch them.
+- **Configuration:** environment variables only, with `.env.example` files; evidence and
+  report directories are configurable per project.
+- **Evidence:** servers that produce results for gates (security, test-automation, ux-hci,
+  browser-research, document-intake, monitoring) can save JSON/Markdown evidence files that the
+  traceability server links to stories.
 
-Gates are enforced, not advisory: a story is not "done" without upstream research, an EPIC and
-Feature parent, acceptance criteria, implementation evidence, test evidence and, where
-relevant, browser regression, UX, security and release evidence. The traceability server
-records each of these links and reports gaps.
+## Dynamic agents (library, not wired in)
 
-## Model routing
-
-The plugin reads the models configured in OpenCode, classifies each into a capability tier,
-and assigns every agent the cheapest model whose tier meets that agent's `model_strength`
-(local first, frontier last). This runs in OpenCode's `config` hook, so it changes which
-model each agent actually uses:
-
-| Tier | Used for | Typical models |
-|---|---|---|
-| `reasoning` | orchestration, complex implementation | GPT-5.x, Claude Opus/Sonnet, 70B+ local |
-| `code-review` | spec and quality review | GPT-4.x, Claude Sonnet, 14B+ local |
-| `code-capable` | standard implementation | GPT-4.1-mini, Claude Haiku, Mixtral |
-| `fast-local` | mechanical TDD steps | Llama 3.1 8B, Qwen 2.5 7B |
-| `fast` | cheap utility calls | any local or mini model |
-
-A role-level routing table is also built from the profile in `methodology-config.json`,
-cached by a SHA-256 hash of the model set, and shown in the first message.
-
-Checked end to end with OpenCode 1.19.6 and a stub model server: with Opus, Sonnet, Haiku and
-a local Llama 3.1 8B configured, the orchestrator ran on Opus, `architect` (complex) on
-Sonnet and `story-writer` (standard) on the local 8B model.
-
-## Dynamic agents (library, not yet wired in)
-
-`lib/agent-factory.js` can write a temporary subagent to
-`.opencode/agents/dynamic/<hash>.md`, picks its model from the routing table, and defaults
-every shell command to `ask`. The same task description always maps to the same agent, so
-retries reuse it and can escalate to a stronger model tier. No hook or command calls it yet.
-
-## Design decisions
-
-- **MCP over prompts.** Anything that must be correct (scans, contrast ratios, traceability
-  links, test runs) is a tool call with structured output, not something the model is asked
-  to remember.
-- **Evidence on disk.** Every phase writes Markdown checkpoints and evidence files that can be
-  reviewed in a PR, so a human can audit what the agents did.
-- **Human gate before build.** Architecture sign-off is the one phase the orchestrator will
-  not skip.
-- **Safe by default.** Command allowlists in `code-execution-mcp`, `ask` permissions for
-  generated agents, and no credentials anywhere in the repo.
+`lib/agent-factory.js` can write a temporary subagent to `.opencode/agents/dynamic/<hash>.md`
+for a task no predefined agent covers, choose its model from the routing table, and escalate a
+tier on retry. It is unit-tested, but no hook or command calls it yet. It is on the
+[roadmap](../README.md#roadmap).

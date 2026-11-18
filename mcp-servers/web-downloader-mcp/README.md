@@ -1,4 +1,26 @@
-# Web Downloader MCP
+# Web Downloader MCP server
+
+> Controlled downloads for research: domain allowlist, size and extension limits, page metadata and HTML-to-text extraction.
+
+| | |
+|---|---|
+| Package | `@agentic-sdlc/web-downloader-mcp` |
+| Tools | 4 ([full list](../../docs/tool-catalog.md#web-downloader-mcp)) |
+| Transport | MCP over stdio |
+| Key dependencies | `@modelcontextprotocol/sdk`, `zod`, `execa` |
+| Configuration | [`.env.example`](.env.example) |
+| Tests | covered by the [MCP smoke test](../../scripts/mcp-smoke.mjs) only; no unit tests yet |
+
+**Run it from the repo root**
+
+```bash
+npm ci && npm run build
+node mcp-servers/web-downloader-mcp/dist/index.js
+```
+
+Part of [Agentic SDLC](../../README.md). The rest of this page is the server's detailed reference.
+
+---
 
 MCP server for downloading web content — HTML pages, documents, images, JSON, and binary files — with safety controls.
 

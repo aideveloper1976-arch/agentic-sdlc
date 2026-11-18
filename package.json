@@ -16,7 +16,9 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "test:framework": "node --test 'framework/test/**/*.test.mjs'",
-    "check": "npm run typecheck && npm test && npm run test:framework"
+    "check": "npm run typecheck && npm test && npm run test:framework",
+    "smoke": "node scripts/mcp-smoke.mjs",
+    "docs:catalog": "node scripts/mcp-smoke.mjs --catalog"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",

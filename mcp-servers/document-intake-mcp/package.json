@@ -1,7 +1,7 @@
 {
   "name": "@agentic-sdlc/document-intake-mcp",
   "version": "0.1.0",
-  "description": "Document Intake MCP server for processing local requirements, research, and evidence documents.",
+  "description": "Turns PDF, DOCX, XLSX, CSV and Markdown files into structured requirements, tables, research evidence and traceability links.",
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",

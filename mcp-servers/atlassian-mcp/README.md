@@ -1,4 +1,26 @@
-# Atlassian MCP (Local) - Setup and Usage
+# Atlassian MCP server
+
+> Jira and Confluence over REST: search and update issues, run workflow transitions, and read, create and update Confluence pages.
+
+| | |
+|---|---|
+| Package | `@agentic-sdlc/atlassian-mcp` |
+| Tools | 15 ([full list](../../docs/tool-catalog.md#atlassian-mcp)) |
+| Transport | MCP over stdio |
+| Key dependencies | `@modelcontextprotocol/sdk`, `axios`, `form-data` |
+| Configuration | [`.env.example`](.env.example) |
+| Tests | covered by the [MCP smoke test](../../scripts/mcp-smoke.mjs) only; no unit tests yet |
+
+**Run it from the repo root**
+
+```bash
+npm ci && npm run build
+node mcp-servers/atlassian-mcp/build/index.js
+```
+
+Part of [Agentic SDLC](../../README.md). The rest of this page is the server's detailed reference.
+
+---
 
 This MCP server exposes custom Jira and Confluence tools over stdio for OpenCode.
 

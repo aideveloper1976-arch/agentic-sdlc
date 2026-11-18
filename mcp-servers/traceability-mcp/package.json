@@ -1,7 +1,7 @@
 {
   "name": "@agentic-sdlc/traceability-mcp",
   "version": "0.1.0",
-  "description": "MCP server for end-to-end delivery traceability (Idea \u2192 Research \u2192 EPIC \u2192 Feature \u2192 Story \u2192 Code \u2192 Test \u2192 UX Review \u2192 Security Review \u2192 Release)",
+  "description": "A SQLite traceability graph from research to EPIC, feature, story, code, test and release, with evidence records, gap detection and optional Jira/Confluence sync.",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

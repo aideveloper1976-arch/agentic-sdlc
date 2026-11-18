@@ -1,7 +1,7 @@
 {
   "name": "@agentic-sdlc/web-downloader-mcp",
   "version": "0.1.0",
-  "description": "MCP server for downloading web content \u2014 HTML pages, documents, images, and binary files with safety controls",
+  "description": "Controlled downloads for research: domain allowlist, size and extension limits, page metadata and HTML-to-text extraction.",
   "private": true,
   "type": "module",
   "scripts": {

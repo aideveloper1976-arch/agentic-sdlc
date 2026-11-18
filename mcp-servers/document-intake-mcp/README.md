@@ -1,4 +1,26 @@
-# Document Intake MCP Server
+# Document Intake MCP server
+
+> Turns PDF, DOCX, XLSX, CSV and Markdown files into structured requirements, tables, research evidence and traceability links.
+
+| | |
+|---|---|
+| Package | `@agentic-sdlc/document-intake-mcp` |
+| Tools | 10 ([full list](../../docs/tool-catalog.md#document-intake-mcp)) |
+| Transport | MCP over stdio |
+| Key dependencies | `@modelcontextprotocol/sdk`, `mammoth`, `xlsx`, `papaparse`, `pdf-parse`, `zod` |
+| Configuration | [`.env.example`](.env.example) |
+| Tests | 2 unit tests in [`test/`](test), plus the [MCP smoke test](../../scripts/mcp-smoke.mjs) |
+
+**Run it from the repo root**
+
+```bash
+npm ci && npm run build
+node mcp-servers/document-intake-mcp/dist/index.js
+```
+
+Part of [Agentic SDLC](../../README.md). The rest of this page is the server's detailed reference.
+
+---
 
 This service processes unstructured local documents (requirements, research papers, market evidence, etc.) and converts them into structured, traceable, and actionable product inputs for OpenCode agents. It operates entirely within the secure local filesystem defined by `DOCUMENT_INTAKE_ROOT`.
 
@@ -7,7 +29,7 @@ This service processes unstructured local documents (requirements, research pape
 The service operates within the following structure:
 
 ```
-tools/document-intake-mcp/
+mcp-servers/document-intake-mcp/
 ├── src/
 │   ├── parsers/   # File type-specific parsers (pdf.ts, docx.ts, etc.)
 │   ├── extractors/ # Business logic extractors (requirements.ts, research.ts, etc.)
@@ -78,7 +100,7 @@ To ingest a document named `market-report.pdf`:
 # Assuming the document is in /data/
 DOCUMENT_INTAKE_ROOT=/data
 DOCUMENT_EVIDENCE_DIR=/data/evidence
-node ./tools/document-intake-mcp/dist/index.js --ingest-document --file-path=/data/market-report.pdf
+node ./mcp-servers/document-intake-mcp/dist/index.js --ingest-document --file-path=/data/market-report.pdf
 ```
 
 ## 📋 OpenCode Configuration
@@ -90,7 +112,7 @@ Add the following to your OpenCode `opencode.json` or `settings.json`:
   "mcp": {
     "document_intake": {
       "type": "local",
-      "command": ["node", "./tools/document-intake-mcp/dist/index.js"],
+      "command": ["node", "./mcp-servers/document-intake-mcp/dist/index.js"],
       "env": {
         "DOCUMENT_INTAKE_ROOT": ".",
         "DOCUMENT_EVIDENCE_DIR": "docs/product/evidence/documents",

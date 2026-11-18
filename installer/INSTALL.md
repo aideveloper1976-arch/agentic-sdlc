@@ -98,13 +98,13 @@ Never commit `creds.env` or `.env` — both are gitignored. See `tools.manifest.
 ## Installing to a different directory
 
 ```bash
-./scripts/install.sh --target-dir /opt/ai-tools
+./scripts/install.sh --target-dir /opt/agentic-sdlc-tools
 ```
 
 ## After install
 
 ```bash
-cd ai-tools   # or your --target-dir
+cd installer   # or your --target-dir
 opencode mcp list       # confirm every server is registered and connects
 opencode mcp debug atlassian_custom   # debug a specific server if it fails to connect
 opencode
@@ -120,4 +120,4 @@ Re-running `install.sh`/`install.ps1` is safe: upstream tools are `git pull`'d i
 
 ## What each tool does
 
-See the tools table in [README.md](README.md), and each tool's own `README.md` for its exposed MCP functions, required environment variables, and usage examples.
+See [docs/mcp-servers.md](../docs/mcp-servers.md) for an overview, the [tool catalogue](../docs/tool-catalog.md) for every tool, and each server's own `README.md` for environment variables and examples.

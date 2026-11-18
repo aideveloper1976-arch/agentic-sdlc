@@ -1,4 +1,26 @@
-# Browser Research MCP Server
+# Browser Research MCP server
+
+> Evidence-backed web research: metasearch through SearXNG (DuckDuckGo fallback), Playwright page extraction, competitor scans, and saved evidence files.
+
+| | |
+|---|---|
+| Package | `@agentic-sdlc/browser-research-mcp` |
+| Tools | 4 ([full list](../../docs/tool-catalog.md#browser-research-mcp)) |
+| Transport | MCP over stdio |
+| Key dependencies | `@modelcontextprotocol/sdk`, `cheerio`, `playwright`, `zod` |
+| Configuration | [`.env.example`](.env.example) |
+| Tests | covered by the [MCP smoke test](../../scripts/mcp-smoke.mjs) only; no unit tests yet |
+
+**Run it from the repo root**
+
+```bash
+npm ci && npm run build
+node mcp-servers/browser-research-mcp/dist/index.js
+```
+
+Part of [Agentic SDLC](../../README.md). The rest of this page is the server's detailed reference.
+
+---
 
 An MCP (Model Context Protocol) server that provides safe, compliant browser/web research tools for OpenCode agent swarms. Supports search via SearXNG, page extraction via Playwright, and evidence storage as markdown + JSON.
 

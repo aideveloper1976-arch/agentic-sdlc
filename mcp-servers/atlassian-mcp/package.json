@@ -1,7 +1,7 @@
 {
   "name": "@agentic-sdlc/atlassian-mcp",
   "version": "0.1.0",
-  "description": "",
+  "description": "Jira and Confluence over REST: search and update issues, run workflow transitions, and read, create and update Confluence pages.",
   "main": "build/index.js",
   "scripts": {
     "build": "tsc",

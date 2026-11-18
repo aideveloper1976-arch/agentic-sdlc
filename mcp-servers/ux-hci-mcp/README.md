@@ -1,6 +1,28 @@
-# OpenCode UX/HCI MCP Server
+# UX/HCI MCP server
 
-A production-grade UX/HCI MCP server that enables AI agents to analyze user interfaces, evaluate usability, detect UX issues, validate interaction patterns, perform accessibility checks, and generate structured UX evidence.
+> Usability review of a running UI: structure analysis, heuristic evaluation, user-flow and form analysis, accessibility checks and a UX report.
+
+| | |
+|---|---|
+| Package | `@agentic-sdlc/ux-hci-mcp` |
+| Tools | 9 ([full list](../../docs/tool-catalog.md#ux-hci-mcp)) |
+| Transport | MCP over stdio |
+| Key dependencies | `@modelcontextprotocol/sdk`, `zod`, `playwright`, `axe-core` |
+| Configuration | [`.env.example`](.env.example) |
+| Tests | covered by the [MCP smoke test](../../scripts/mcp-smoke.mjs) only; no unit tests yet |
+
+**Run it from the repo root**
+
+```bash
+npm ci && npm run build
+node mcp-servers/ux-hci-mcp/dist/index.js
+```
+
+Part of [Agentic SDLC](../../README.md). The rest of this page is the server's detailed reference.
+
+---
+
+A UX/HCI MCP server that enables AI agents to analyze user interfaces, evaluate usability, detect UX issues, validate interaction patterns, perform accessibility checks, and generate structured UX evidence.
 
 ## UX Principles Used
 

@@ -4,6 +4,8 @@ mode: subagent
 model_type: story-writing
 model_strength: standard
 permission:
+  bash:
+    "*": ask
   edit: ask
 ---
 You are the Story Writer agent.

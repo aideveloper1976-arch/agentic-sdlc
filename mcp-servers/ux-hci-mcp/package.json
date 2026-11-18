@@ -1,7 +1,7 @@
 {
   "name": "@agentic-sdlc/ux-hci-mcp",
   "version": "0.1.0",
-  "description": "UX/HCI MCP server for OpenCode - UI analysis, usability evaluation, accessibility checks",
+  "description": "Usability review of a running UI: structure analysis, heuristic evaluation, user-flow and form analysis, accessibility checks and a UX report.",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

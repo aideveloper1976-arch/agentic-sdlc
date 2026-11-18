@@ -26,7 +26,7 @@
       "name": "browser-pool",
       "mcpKey": null,
       "dir": "browser-pool",
-      "description": "Shared Chromium browser pool library used internally by browser-research-mcp, test-automation-mcp, and ux-hci-mcp. Not a standalone MCP server.",
+      "description": "Reusable Chromium browser pool library. Not a standalone MCP server.",
       "sourceType": "custom",
       "subdir": "packages/browser-pool",
       "buildCmd": "npm install",
