@@ -1,7 +1,6 @@
 ---
 description: Researches market, competitors, pricing, UX patterns, and feature expectations using evidence.
 mode: subagent
-model: deepseek/deepseek-v4-flash
 model_type: research
 model_strength: standard
 permission:

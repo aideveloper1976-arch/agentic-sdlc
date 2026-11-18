@@ -30,29 +30,66 @@
     },
     "profiles": {
       "default": {
-        "orchestrator": { "provider": "deepseek", "model": "deepseek-v4-flash" },
+        "orchestrator": {
+          "provider": "auto",
+          "capability": "reasoning"
+        },
         "implementer": {
-          "mechanical": { "provider": "deepseek", "model": "deepseek-v4-flash" },
-          "standard": { "provider": "deepseek", "model": "deepseek-v4-flash" },
-          "complex": { "provider": "deepseek", "model": "deepseek-v4-flash" }
+          "mechanical": {
+            "provider": "auto",
+            "capability": "fast-local"
+          },
+          "standard": {
+            "provider": "auto",
+            "capability": "code-capable"
+          },
+          "complex": {
+            "provider": "auto",
+            "capability": "reasoning"
+          }
         },
         "reviewer": {
-          "spec": { "provider": "deepseek", "model": "deepseek-v4-flash" },
-          "quality": { "provider": "deepseek", "model": "deepseek-v4-flash" }
+          "spec": {
+            "provider": "auto",
+            "capability": "code-capable"
+          },
+          "quality": {
+            "provider": "auto",
+            "capability": "code-review"
+          }
         }
       },
       "local-only": {
-        "orchestrator": { "provider": "ollama", "model": "auto" },
+        "orchestrator": {
+          "provider": "ollama",
+          "model": "auto"
+        },
         "implementer": {
-          "mechanical": { "provider": "ollama", "capability": "fast" },
-          "standard": { "provider": "ollama", "capability": "code-capable" },
-          "complex": { "provider": "ollama", "capability": "reasoning" }
+          "mechanical": {
+            "provider": "ollama",
+            "capability": "fast"
+          },
+          "standard": {
+            "provider": "ollama",
+            "capability": "code-capable"
+          },
+          "complex": {
+            "provider": "ollama",
+            "capability": "reasoning"
+          }
         },
         "reviewer": {
-          "spec": { "provider": "ollama", "capability": "fast" },
-          "quality": { "provider": "ollama", "capability": "code-capable" }
+          "spec": {
+            "provider": "ollama",
+            "capability": "fast"
+          },
+          "quality": {
+            "provider": "ollama",
+            "capability": "code-capable"
+          }
         }
       }
-    }
+    },
+    "activeProfile": "default"
   }
 }

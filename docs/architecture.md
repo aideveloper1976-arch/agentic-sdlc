@@ -9,7 +9,7 @@ flowchart TB
     U([Developer]) -->|"/run-full-sdlc 'feature'"| O
 
     subgraph FW[framework/ — runs inside OpenCode]
-        P[methodology-engine plugin<br/>bootstrap · model router · agent factory · compaction hints]
+        P[methodology-engine plugin<br/>bootstrap · model router · compaction hints]
         O[master-orchestrator<br/>primary agent]
         A[15 specialist subagents<br/>research · product · UX · architect · backend · frontend<br/>test · code review · security · release · traceability]
         S[skills<br/>methodology + role skills]
@@ -60,8 +60,10 @@ records each of these links and reports gaps.
 
 ## Model routing
 
-The plugin discovers the models configured in OpenCode (plus Ollama's local model list),
-classifies each into a capability tier, and builds a routing table:
+The plugin reads the models configured in OpenCode, classifies each into a capability tier,
+and assigns every agent the cheapest model whose tier meets that agent's `model_strength`
+(local first, frontier last). This runs in OpenCode's `config` hook, so it changes which
+model each agent actually uses:
 
 | Tier | Used for | Typical models |
 |---|---|---|
@@ -71,16 +73,19 @@ classifies each into a capability tier, and builds a routing table:
 | `fast-local` | mechanical TDD steps | Llama 3.1 8B, Qwen 2.5 7B |
 | `fast` | cheap utility calls | any local or mini model |
 
-The table is shown once for confirmation and cached by a SHA-256 hash of the model set, so
-it is only re-confirmed when the available models change. This lets cheap local models do
-mechanical work while frontier models handle orchestration and hard reasoning.
+A role-level routing table is also built from the profile in `methodology-config.json`,
+cached by a SHA-256 hash of the model set, and shown in the first message.
 
-## Dynamic agents
+Checked end to end with OpenCode 1.19.6 and a stub model server: with Opus, Sonnet, Haiku and
+a local Llama 3.1 8B configured, the orchestrator ran on Opus, `architect` (complex) on
+Sonnet and `story-writer` (standard) on the local 8B model.
 
-When no predefined agent fits a task, the `AgentFactory` writes a temporary subagent to
+## Dynamic agents (library, not yet wired in)
+
+`lib/agent-factory.js` can write a temporary subagent to
 `.opencode/agents/dynamic/<hash>.md`, picks its model from the routing table, and defaults
 every shell command to `ask`. The same task description always maps to the same agent, so
-retries reuse it and can escalate to a stronger model tier.
+retries reuse it and can escalate to a stronger model tier. No hook or command calls it yet.
 
 ## Design decisions
 

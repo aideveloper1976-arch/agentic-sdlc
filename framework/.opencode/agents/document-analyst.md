@@ -1,7 +1,6 @@
 ---
 description: Reads documents and extracts structured requirements, research evidence, risks, assumptions, and open questions.
 mode: subagent
-model: deepseek/deepseek-v4-flash
 model_type: document-analysis
 model_strength: standard
 permission:

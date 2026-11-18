@@ -8,7 +8,13 @@ const TIER_RULES = {
         return name.includes("gpt-5") || name.includes("o1") || name.includes("o3") || name.includes("claude");
       }
       if (m.provider === "anthropic") {
-        return name.includes("opus") || name.includes("sonnet");
+        return name.includes("opus");
+      }
+      if (m.provider === "deepseek") {
+        return name.includes("pro") || name.includes("reasoner") || name.includes("r1");
+      }
+      if (m.provider === "google" || m.provider === "gemini") {
+        return name.includes("pro");
       }
       if (m.provider === "ollama") {
         const params = extractParamCount(m.id);
@@ -45,6 +51,9 @@ const TIER_RULES = {
       }
       if (m.provider === "anthropic") {
         return name.includes("haiku") || name.includes("sonnet");
+      }
+      if (m.provider === "deepseek" || m.provider === "google" || m.provider === "gemini") {
+        return true;
       }
       if (m.provider === "ollama") {
         const params = extractParamCount(m.id);
@@ -128,7 +137,7 @@ export { extractParamCount, classifyByMetadata };
 export class ModelProfiler {
   async classify(model) {
     const metadataTier = classifyByMetadata(model);
-    const isLocal = model.provider === "ollama";
+    const isLocal = String(model.provider || "").startsWith("ollama");
     const isOpenAI = model.provider === "openai";
 
     const tierPriority = ["reasoning", "code-review", "code-capable", "fast-local", "fast", "standard"];

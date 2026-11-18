@@ -1,7 +1,6 @@
 ---
 description: Converts research and documents into product vision, USP, FRs, NFRs, risks, assumptions, dependencies, and EPIC candidates.
 mode: subagent
-model: deepseek/deepseek-v4-flash
 model_type: product-analysis
 model_strength: complex
 permission:

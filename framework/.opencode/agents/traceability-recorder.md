@@ -1,7 +1,6 @@
 ---
 description: Maintains audit trail across idea, research, EPIC, Feature, Story, code, tests, UX, security, PR, release, and monitoring.
 mode: subagent
-model: deepseek/deepseek-v4-flash
 model_type: traceability
 model_strength: standard
 permission:

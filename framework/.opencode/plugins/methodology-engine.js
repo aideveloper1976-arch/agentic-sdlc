@@ -90,8 +90,6 @@ const readConfig = (configPath) => {
   }
 };
 
-export const id = "methodology-engine";
-
 export const MethodologyEnginePlugin = async (ctx) => {
   const configPath = path.join(ctx.directory, ".opencode/plugins", CONFIG_FILENAME);
   ensureConfigExists(configPath);
@@ -217,7 +215,7 @@ export const MethodologyEnginePlugin = async (ctx) => {
         "",
         "To change these assignments, edit `.opencode/plugins/methodology-config.json` and restart the session.",
         "",
-        "To switch profiles mid-session, use `/use-model-profile <profile-name>`.",
+        "To switch profiles, set `models.activeProfile` in `.opencode/plugins/methodology-config.json` and restart the session.",
         "",
         "### Agent Model Assignments",
         "",
@@ -252,5 +250,3 @@ export const MethodologyEnginePlugin = async (ctx) => {
   };
 };
 
-export const server = MethodologyEnginePlugin;
-export default MethodologyEnginePlugin;

@@ -1,7 +1,6 @@
 ---
 description: Reviews usability, HCI quality, accessibility, authentication UX, authorization UX, flow clarity, and visual consistency.
 mode: subagent
-model: deepseek/deepseek-v4-flash
 model_type: ux-review
 model_strength: standard
 permission:

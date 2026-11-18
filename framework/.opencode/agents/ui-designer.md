@@ -1,7 +1,6 @@
 ---
 description: Design-system-aware product UI designer that creates consistent, accessible, responsive, implementation-ready web screens matching the existing application style.
 mode: subagent
-model: deepseek/deepseek-v4-flash
 model_type: code
 model_strength: complex
 permission:

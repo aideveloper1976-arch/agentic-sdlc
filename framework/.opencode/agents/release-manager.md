@@ -1,7 +1,6 @@
 ---
 description: Prepares GitHub PRs, release notes, CI checks, deployment handoff, monitoring checks, and release readiness.
 mode: subagent
-model: deepseek/deepseek-v4-flash
 model_type: release
 model_strength: standard
 permission:

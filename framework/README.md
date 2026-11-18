@@ -27,7 +27,7 @@ OpenCode Session
      ├── opencode.json ─── Config (MCPs, agents, providers, permissions)
      │
      ├── Plugin ─── methodology-engine.js
-     │     ├── Model auto-discovery (Ollama, OpenAI)
+     │     ├── Model discovery (from OpenCode config)
      │     ├── Capability-profiled routing table
      │     ├── Bootstrap injection (skill-first enforcement)
      │     ├── Session compaction hints
@@ -74,13 +74,18 @@ The bootstrap is cached after the first load and a **guard marker** (`EXTREMELY_
 
 ### Model Discovery & Routing
 
-The plugin probes Ollama (`/api/tags`) and OpenAI (`/v1/models`) APIs to discover available models, then classifies each into a capability tier:
+The plugin reads the models configured in OpenCode (`model`, `small_model`, `provider.<id>.models`, `agent.<name>.model`) and classifies each into a capability tier. It does not call provider APIs. Agent frontmatter `model:` values are treated as preferences: they win only when that model is actually configured.
+
+Routing happens in two places:
+
+1. **Agent assignments (this is what changes which model runs).** In OpenCode's `config` hook the plugin sets `cfg.agent[name].model` for every agent. Each agent's `model_strength` sets the weakest tier it may use (`complex` → code-review or better, `standard` → fast-local or better; `model_type: orchestration` → reasoning only), and among the models that qualify it picks the cheapest: local Ollama first, then DeepSeek, GPT, Gemini, Claude, and within a provider the least capable model that still qualifies.
+2. **The routing table** for orchestrator / implementer / reviewer roles, built from the profile in `methodology-config.json` and shown to the agent in the first message.
 
 | Tier | Label | Typical Models |
 |------|-------|---------------|
-| `reasoning` | Complex reasoning | gpt-5.x, o1, o3, claude, 70B+ local |
-| `code-review` | Code review | gpt-4.x, 14B+ local |
-| `code-capable` | Standard implementation | gpt-4-mini, mixtral, command-r |
+| `reasoning` | Complex reasoning | gpt-5.x, o1, o3, Claude Opus, DeepSeek pro/reasoner, Gemini pro, 70B+ local |
+| `code-review` | Code review | gpt-4.x, Claude Sonnet, 14B+ local |
+| `code-capable` | Standard implementation | gpt-4.1-mini, Claude Haiku, DeepSeek, Gemini flash, mixtral |
 | `fast-local` | Simple TDD tasks | llama3.1-8b, qwen2.5-7b |
 | `fast` | Fast inference | Any local model, mini variants |
 
@@ -96,7 +101,9 @@ Classified models populate a **routing table**:
 | Quality Reviewer        | qwen2.5:14b (local)    |
 ```
 
-The routing table is presented to the user for confirmation on first session (or when models change). A SHA-256 hash of the available model set prevents redundant confirmations.
+The table is cached in `.opencode/plugins/.routing-cache.json` and rebuilt only when the configured model set changes (SHA-256 hash of the model list). It is shown in the first message for visibility; there is no interactive accept/reject step yet.
+
+Verified end to end with OpenCode 1.19.6 against a stub model server: with Opus, Sonnet, Haiku and a local Llama 3.1 8B configured, `master-orchestrator` ran on Opus, `architect` on Sonnet and `story-writer` on the local 8B model. See `framework/test/routing-e2e.test.mjs`.
 
 ### Session Compacting
 
@@ -104,7 +111,7 @@ The plugin registers critical context strings with OpenCode's compaction system,
 
 ### Dynamic Agent Factory
 
-When a task requires capabilities not covered by any predefined agent, the `AgentFactory` generates a temporary agent definition. Generated agents:
+`lib/agent-factory.js` can generate a temporary agent definition for a task no predefined agent covers. It is a tested library but is **not yet wired to a plugin hook or command**, so OpenCode never calls it on its own. Generated agents:
 - Persist to `.opencode/agents/dynamic/` for cross-session reuse
 - Use the same task description hash → same agent (avoid duplicates)
 - Select the correct model tier from the routing table
@@ -366,7 +373,7 @@ Plugin-specific configuration at `.opencode/plugins/methodology-config.json`:
 | `execution.max_concurrent_subagents` | `10` | Max parallel subagents per batch |
 | `execution.retry_limit` | `3` | Max retry attempts before escalating to user |
 | `models.providers` | ollama + openai | Which providers to probe for model discovery |
-| `models.profiles` | default + local-only | Model routing profiles (selectable via `/use-model-profile`) |
+| `models.profiles` | default + local-only | Model routing profiles (set `models.activeProfile` and restart) |
 
 ### AGENTS.md
 

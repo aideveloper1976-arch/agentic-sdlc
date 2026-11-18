@@ -1,7 +1,6 @@
 ---
 description: Creates delivery-ready backlog using EPIC → Feature → Story format with acceptance criteria and traceability.
 mode: subagent
-model: deepseek/deepseek-v4-flash
 model_type: story-writing
 model_strength: standard
 permission:

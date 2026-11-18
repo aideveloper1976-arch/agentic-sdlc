@@ -22,7 +22,8 @@ provider API discovery. The router reads:
 Agents are discovered from inline `opencode.json.agent`, `.opencode/agents/*.md`,
 and `.opencode/agent/*.md`. For each agent, the router reads frontmatter
 `model_type` and `model_strength`, selects the cheapest capable model using the
-preference order Ollama → DeepSeek → GPT → Gemini → Claude, and mutates
+preference order Ollama → DeepSeek → GPT → Gemini → Claude (frontmatter `model:`
+wins only if that model is configured), and mutates
 `cfg.agent[agentName].model` at runtime. Agent files are not rewritten during
 assignment.
 

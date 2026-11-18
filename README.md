@@ -23,9 +23,10 @@ writes reviewable evidence to disk.
 - **Orchestration that fits in one context window.** The orchestrator dispatches each phase
   to a fresh subagent and keeps only a one-line pointer to its checkpoint file, so a full
   18-phase run doesn't exhaust context, and `/continue-sdlc` can resume from disk.
-- **Cost-aware model routing.** A plugin discovers available models (Ollama, OpenAI,
-  Anthropic, DeepSeek), classifies them into capability tiers, and routes mechanical TDD steps
-  to cheap local models and orchestration to frontier models.
+- **Cost-aware model routing.** A plugin classifies the configured models (Ollama, OpenAI,
+  Anthropic, DeepSeek, Gemini) into capability tiers and gives each agent the cheapest model
+  that meets its needs: local models for routine agents, frontier models for orchestration.
+  Verified end to end in OpenCode (see [framework/README.md](framework/README.md#model-discovery--routing)).
 - **Gates that block.** Code review, security and traceability are enforced checks backed by
   tools, not prompts. A story isn't done without linked research, tests and evidence.
 - **Real tools over model memory.** 12 TypeScript MCP servers (~17k lines) handle the things
@@ -43,7 +44,7 @@ flowchart LR
     Agents --> MCP[12 MCP servers]
     MCP --> Ext[(GitHub · Jira · Confluence · browsers · scanners)]
     Agents -->|checkpoints + evidence| Disk[(docs/sdlc-runs)]
-    Plugin[methodology-engine plugin<br/>model router · agent factory] -.-> Orch
+    Plugin[methodology-engine plugin<br/>model router · bootstrap] -.-> Orch
 ```
 
 More detail in [docs/architecture.md](docs/architecture.md).
@@ -52,7 +53,7 @@ More detail in [docs/architecture.md](docs/architecture.md).
 
 | Path | Contents |
 |---|---|
-| [`framework/`](framework) | OpenCode plugin (model router, agent factory, bootstrap), 15 agents, 9 slash commands, methodology and role skills, `AGENTS.md` phase rules, example config |
+| [`framework/`](framework) | OpenCode plugin (model router, bootstrap, compaction hints), 15 agents, 9 slash commands, methodology and role skills, `AGENTS.md` phase rules, example config |
 | [`mcp-servers/`](mcp-servers) | 12 MCP servers: traceability, security, test-automation, ux-hci, ux-intelligence, browser-research, web-downloader, document-intake, code-execution, monitoring, github, atlassian. See [docs/mcp-servers.md](docs/mcp-servers.md) |
 | [`packages/browser-pool`](packages/browser-pool) | Shared Chromium pool for the browser-driven servers |
 | [`installer/`](installer) | One-command installer (bash + PowerShell) that builds the servers and writes MCP config for **Claude Code, OpenCode, VS Code and Zed** |

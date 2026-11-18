@@ -1,7 +1,6 @@
 ---
 description: Performs structured code-review gate checks before release, covering correctness, contract drift, tests, docs, and merge risk.
 mode: subagent
-model: deepseek/deepseek-v4-flash
 model_type: code-review
 model_strength: complex
 permission:

@@ -2,11 +2,17 @@ import path from "path";
 import fs from "fs";
 import os from "os";
 import crypto from "crypto";
-import { ModelProfiler } from "./model-profiler.js";
+import { ModelProfiler, classifyByMetadata } from "./model-profiler.js";
 
 const CACHE_FILENAME = ".routing-cache.json";
 const AGENT_DIRS = [".opencode/agents", ".opencode/agent"];
-const PROVIDER_PRIORITY = ["deepseek", "anthropic", "gpt", "gemini", "ollama", "other"];
+// Cheapest first: local models, then low-cost hosted, then frontier hosted.
+const PROVIDER_PRIORITY = ["ollama", "deepseek", "gpt", "gemini", "claude", "other"];
+
+// Lower rank = more capable. "standard" means the profiler could not classify the model.
+const TIER_RANK = { reasoning: 0, "code-review": 1, "code-capable": 2, "fast-local": 3, fast: 4, standard: 5 };
+// Weakest tier an agent of each model_strength may be routed to.
+const STRENGTH_MAX_RANK = { orchestration: TIER_RANK.reasoning, complex: TIER_RANK["code-review"], standard: TIER_RANK["fast-local"], fast: TIER_RANK.standard };
 
 const extractFrontmatter = (content) => {
   const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
@@ -154,21 +160,22 @@ export class ModelRouter {
       addModel(agentConfig?.model, `opencode.agent.${name}.model`);
     }
 
-    for (const agent of this.discoverAgentFiles().values()) {
-      addModel(agent.frontmatter?.model, `${agent.source}/${path.basename(agent.path)} frontmatter`);
-    }
+    // Agent frontmatter `model:` values are preferences, not proof a model is configured,
+    // so they are not added here. selectModelForAgent() uses them only when they match a
+    // configured model, or as a last-resort fallback when nothing is configured.
 
     return [...models.values()].sort((a, b) => modelKey(a).localeCompare(modelKey(b)));
   }
 
+  modelTier(model) {
+    return classifyByMetadata({ ...model, provider: String(model.provider || "").toLowerCase().startsWith("ollama") ? "ollama" : model.provider });
+  }
+
   modelSupportsStrength(model, strength) {
     const id = String(model.id || "").toLowerCase();
-    if (strength === "fast") return true;
-    if (strength === "standard") return !/(embedding|audio|image|vision|tts|whisper)/.test(id);
-    if (strength === "complex") {
-      return /(gpt-5|gpt-4|claude|opus|sonnet|gemini-3|gemini-2\.5|pro|deepseek|qwen|gemma|llama|mixtral|reason)/.test(id);
-    }
-    return true;
+    if (/(embed|embedding|audio|image|tts|whisper)/.test(id)) return false;
+    const maxRank = STRENGTH_MAX_RANK[strength] ?? STRENGTH_MAX_RANK.standard;
+    return (TIER_RANK[this.modelTier(model)] ?? TIER_RANK.standard) <= maxRank;
   }
 
   sortByCostPreference(a, b) {
@@ -177,12 +184,16 @@ export class ModelRouter {
     const aCost = a.details?.cost?.input ?? Number.POSITIVE_INFINITY;
     const bCost = b.details?.cost?.input ?? Number.POSITIVE_INFINITY;
     if (aCost !== bCost) return aCost - bCost;
+    // Without price data, prefer the least capable model that still qualifies (a cost proxy).
+    const rankDelta = (TIER_RANK[this.modelTier(b)] ?? 5) - (TIER_RANK[this.modelTier(a)] ?? 5);
+    if (rankDelta !== 0) return rankDelta;
     return modelKey(a).localeCompare(modelKey(b));
   }
 
   selectModelForAgent(agent, availableModels, openCodeConfig = {}) {
     const frontmatter = agent.frontmatter || {};
-    const strength = frontmatter.model_strength || "standard";
+    // The orchestrator plans the whole run, so it always needs a reasoning-tier model.
+    const strength = frontmatter.model_type === "orchestration" ? "orchestration" : (frontmatter.model_strength || "standard");
 
     // If the agent frontmatter explicitly specifies a model, use it first
     if (frontmatter.model) {
@@ -236,8 +247,8 @@ export class ModelRouter {
   async profileModels(models) {
     const profiled = [];
     for (const model of models) {
-      const tier = await this.profiler.classify(model);
-      profiled.push({ ...model, tier });
+      const info = await this.profiler.classify(model);
+      profiled.push({ ...model, tier: info.tier, isLocal: info.isLocal, tierInfo: info });
     }
     return profiled;
   }
@@ -246,19 +257,29 @@ export class ModelRouter {
     const profile = this.config.models?.profiles?.[activeProfile] || this.config.models?.profiles?.default;
     if (!profile) return null;
 
+    const byCost = (list) => [...list].sort((a, b) => this.sortByCostPreference(a, b));
     const resolveCapability = (capability) => {
-      const candidates = profiledModels.filter((m) => m.tier === capability);
-      if (candidates.length > 0) return candidates[0];
-      const fallback = profiledModels.filter((m) => m.tier === "standard" || m.tier === "code-capable");
-      return fallback.length > 0 ? fallback[0] : null;
+      const exact = byCost(profiledModels.filter((m) => m.tier === capability));
+      if (exact.length > 0) return exact[0];
+      // No model in that tier: take the nearest tier, preferring a more capable one.
+      const want = TIER_RANK[capability] ?? TIER_RANK.standard;
+      const ranked = profiledModels
+        .map((m) => ({ m, rank: TIER_RANK[m.tier] ?? TIER_RANK.standard }))
+        .sort((a, b) => {
+          const da = a.rank <= want ? want - a.rank : 100 + a.rank - want;
+          const db = b.rank <= want ? want - b.rank : 100 + b.rank - want;
+          return da - db || this.sortByCostPreference(a.m, b.m);
+        });
+      return ranked.length > 0 ? ranked[0].m : null;
     };
 
     const pickFastestLocal = (profiledModels) => {
-      const local = profiledModels.filter((m) => m.source === "local" && (m.tier === "fast" || m.tier === "fast-local" || m.tier === "standard"));
-      return local.length > 0 ? local[0] : null;
+      const local = profiledModels.filter((m) => m.isLocal && (m.tier === "fast" || m.tier === "fast-local" || m.tier === "standard"));
+      return local.length > 0 ? byCost(local)[0] : null;
     };
 
-    const resolveEntry = (entry) => {
+    const resolveEntry = (entry, defaultCapability) => {
+      if (!entry) entry = {};
       if (entry.model && entry.model !== "auto") {
         const match = profiledModels.find((m) => m.id === entry.model);
         if (match) return match;
@@ -271,8 +292,12 @@ export class ModelRouter {
         const match = resolveCapability(entry.capability);
         if (match) return match;
       }
-      if (entry.provider) {
+      if (entry.provider && entry.provider !== "auto") {
         const match = profiledModels.find((m) => m.provider === entry.provider);
+        if (match) return match;
+      }
+      if (defaultCapability) {
+        const match = resolveCapability(defaultCapability);
         if (match) return match;
       }
       return profiledModels.length > 0 ? profiledModels[0] : null;
@@ -281,15 +306,15 @@ export class ModelRouter {
     return {
       builtAt: new Date().toISOString(),
       activeProfile: activeProfile || "default",
-      orchestrator: resolveEntry(profile.orchestrator),
+      orchestrator: resolveEntry(profile.orchestrator, "reasoning"),
       implementer: {
-        mechanical: resolveEntry(profile.implementer?.mechanical),
-        standard: resolveEntry(profile.implementer?.standard),
-        complex: resolveEntry(profile.implementer?.complex),
+        mechanical: resolveEntry(profile.implementer?.mechanical, "fast-local"),
+        standard: resolveEntry(profile.implementer?.standard, "code-capable"),
+        complex: resolveEntry(profile.implementer?.complex, "reasoning"),
       },
       reviewer: {
-        spec: resolveEntry(profile.reviewer?.spec),
-        quality: resolveEntry(profile.reviewer?.quality),
+        spec: resolveEntry(profile.reviewer?.spec, "code-capable"),
+        quality: resolveEntry(profile.reviewer?.quality, "code-review"),
       },
     };
   }
@@ -297,7 +322,7 @@ export class ModelRouter {
   routingTableToMarkdown(table) {
     const fmt = (m) => {
       if (!m) return "Not available";
-      return `${m.provider}/${m.id} ${m.source === "local" ? "(local)" : "(remote)"}`;
+      return `${m.provider}/${m.id} ${m.isLocal ? "(local)" : "(remote)"}`;
     };
     return [
       "| Task Type | Model | Provider |",

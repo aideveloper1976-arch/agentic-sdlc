@@ -1,7 +1,6 @@
 ---
 description: Implements backend stories, APIs, services, database logic, migrations, and backend tests.
 mode: subagent
-model: deepseek/deepseek-v4-flash
 model_type: code
 model_strength: complex
 permission:

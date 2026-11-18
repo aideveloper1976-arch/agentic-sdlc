@@ -1,7 +1,6 @@
 ---
 description: Coordinates the full AI SDLC from idea to research, backlog, UX design, architecture, build, test, UX review, security, release, monitoring, and traceability.
 mode: primary
-model: deepseek/deepseek-v4-pro
 model_type: orchestration
 model_strength: complex
 permission:

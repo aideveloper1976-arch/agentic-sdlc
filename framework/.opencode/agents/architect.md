@@ -1,7 +1,6 @@
 ---
 description: Designs architecture, APIs, data model, integrations, security, observability, deployment, and implementation approach.
 mode: subagent
-model: deepseek/deepseek-v4-flash
 model_type: architecture
 model_strength: complex
 permission:

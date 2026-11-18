@@ -1,7 +1,6 @@
 ---
 description: Performs AppSec checks including dependency scans, secret scans, code security, API risks, and container risks.
 mode: subagent
-model: deepseek/deepseek-v4-flash
 model_type: security-review
 model_strength: complex
 permission:

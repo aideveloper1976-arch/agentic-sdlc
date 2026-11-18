@@ -24,6 +24,7 @@ test("mid-size local models are code-review capable", async () => {
 test("hosted frontier models are classed as reasoning", async () => {
   assert.equal(await tierOf("openai", "gpt-5.5"), "reasoning");
   assert.equal(await tierOf("anthropic", "claude-opus-4-5"), "reasoning");
+  assert.equal(await tierOf("anthropic", "claude-sonnet-4-5"), "code-review");
 });
 
 test("small hosted models fall into cheaper tiers", async () => {

@@ -1,7 +1,6 @@
 ---
 description: Runs unit, integration, end-to-end, regression, visual, and evidence-backed tests.
 mode: subagent
-model: deepseek/deepseek-v4-flash
 model_type: test
 model_strength: standard
 permission:

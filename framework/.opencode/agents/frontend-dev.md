@@ -1,7 +1,6 @@
 ---
 description: Implements frontend stories, UI flows, components, forms, state, accessibility hooks, and frontend tests.
 mode: subagent
-model: deepseek/deepseek-v4-flash
 model_type: code
 model_strength: complex
 permission:
