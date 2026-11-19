@@ -13,15 +13,15 @@
   "dependencies": {
     "@axe-core/playwright": "^4.11.2",
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "dotenv": "^16.4.7",
-    "pixelmatch": "^6.0.0",
+    "dotenv": "^18.0.10",
+    "pixelmatch": "^8.0.0",
     "playwright": "^1.59.1",
-    "sharp": "^0.34.5",
-    "uuid": "^11.1.0",
-    "zod": "^3.24.2"
+    "sharp": "^0.35.5",
+    "uuid": "^14.0.3",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@types/uuid": "^10.0.0"
+    "@types/uuid": "^11.0.0"
   },
   "private": true,
   "license": "MIT"

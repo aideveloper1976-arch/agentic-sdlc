@@ -15,13 +15,13 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.8.0",
-    "zod": "^3.24.3",
-    "dotenv": "^16.4.7",
-    "execa": "^9.5.2",
-    "uuid": "^11.1.0"
+    "zod": "^4.6.7",
+    "dotenv": "^18.0.10",
+    "execa": "^10.2.1",
+    "uuid": "^14.0.3"
   },
   "devDependencies": {
-    "@types/uuid": "^10.0.0"
+    "@types/uuid": "^11.0.0"
   },
   "license": "MIT"
 }
