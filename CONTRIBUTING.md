@@ -11,7 +11,7 @@ npm run check    # typecheck + unit tests + framework tests
 npm run smoke    # boot every MCP server and list its tools
 ```
 
-Node.js 20 or newer is required. Browser-driven servers need `npx playwright install chromium`.
+Node.js 22 or newer is required. Browser-driven servers need `npx playwright install chromium`.
 
 ## Making a change
 

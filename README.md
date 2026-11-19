@@ -11,7 +11,7 @@ leaves evidence a human can audit, and the things that must be correct are tool 
 [![CI](https://github.com/aideveloper1976-arch/agentic-sdlc/actions/workflows/ci.yml/badge.svg)](https://github.com/aideveloper1976-arch/agentic-sdlc/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/aideveloper1976-arch/agentic-sdlc/actions/workflows/codeql.yml/badge.svg)](https://github.com/aideveloper1976-arch/agentic-sdlc/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Node 20+](https://img.shields.io/badge/node-%E2%89%A520-339933?logo=node.js&logoColor=white)
+![Node 22+](https://img.shields.io/badge/node-%E2%89%A522-339933?logo=node.js&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![MCP](https://img.shields.io/badge/Model%20Context%20Protocol-12%20servers-6E56CF)
 
@@ -133,7 +133,7 @@ How it works, and what is and isn't verified: [docs/model-routing.md](docs/model
 
 ## Quick start
 
-**Requirements:** Node.js 20+, git. Optional: Docker, Trivy, gitleaks, Ollama.
+**Requirements:** Node.js 22+, git. Optional: Docker, Trivy, gitleaks, Ollama.
 
 ```bash
 git clone https://github.com/aideveloper1976-arch/agentic-sdlc.git

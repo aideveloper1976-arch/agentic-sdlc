@@ -6,7 +6,7 @@ This installs the full MCP server collection: the custom servers in this repo's 
 
 | Requirement | Version | Notes |
 |---|---|---|
-| **Node.js** | v20+ | https://nodejs.org/ |
+| **Node.js** | v22+ | https://nodejs.org/ |
 | **npm** | bundled with Node.js | |
 | **git** | any recent version | |
 | **OpenCode** | latest | `npm install -g opencode-ai` |
@@ -32,7 +32,7 @@ cd agentic-sdlc\installer
 
 The installer:
 
-1. Checks prerequisites (Node 20+, npm, git; warns on missing optional tools).
+1. Checks prerequisites (Node 22+, npm, git; warns on missing optional tools).
 2. Clones this repo once and copies each custom server's folder into place.
 3. Clones/updates the upstream tools (graphify, notebooklm-mcp-cli, remotion-media-mcp) directly from their own GitHub repos. `mcp-chrome` is optional (see below).
 4. Runs `npm install` + build for every tool, plus any tool-specific post-install step (Playwright browser install, traceability DB init).

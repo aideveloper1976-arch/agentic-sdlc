@@ -4,6 +4,13 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- Node.js 22 or newer is now required, and CI tests on Node 22 and 24. Node 20 reached end of
+  life in April 2026, and its test runner does not expand the `test/**/*.test.ts` globs the
+  workspace test scripts use, so tests failed on Node 20.
+
 ## [0.1.0] - 2026-11-18
 
 First public release.

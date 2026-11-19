@@ -60,7 +60,7 @@ function Check-Prereqs {
     }
   }
   $nodeMajor = [int]((node -e "console.log(process.versions.node.split('.')[0])").Trim())
-  if ($nodeMajor -lt 18) { throw "Node.js v18+ required, found v$nodeMajor" }
+  if ($nodeMajor -lt 22) { throw "Node.js v22+ required, found v$nodeMajor" }
   Ok "node $(node -v), npm $(npm -v), git $((git --version).Split(' ')[2])"
 
   foreach ($optional in @("docker", "trivy", "gitleaks", "pip-audit", "pnpm", "pip", "uv")) {

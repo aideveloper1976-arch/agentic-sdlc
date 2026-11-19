@@ -2,7 +2,7 @@
 
 ## 1. Build and check the repo
 
-Requirements: Node.js 20 or newer, git. Optional: Docker (SearXNG, Docker scans), Trivy and
+Requirements: Node.js 22 or newer, git. Optional: Docker (SearXNG, Docker scans), Trivy and
 gitleaks (security scans), Ollama (local models), Playwright browsers (browser-driven servers).
 
 ```bash

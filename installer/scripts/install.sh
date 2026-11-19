@@ -79,12 +79,12 @@ manifest_get() {
 # ---------- 1. Prerequisites ----------
 check_prereqs() {
   info "Checking prerequisites..."
-  command -v node >/dev/null 2>&1 || { echo "Node.js v18+ is required: https://nodejs.org/"; exit 1; }
+  command -v node >/dev/null 2>&1 || { echo "Node.js v22+ is required: https://nodejs.org/"; exit 1; }
   command -v npm  >/dev/null 2>&1 || { echo "npm is required (bundled with Node.js)"; exit 1; }
   command -v git  >/dev/null 2>&1 || { echo "git is required"; exit 1; }
   NODE_MAJOR="$(node -e 'console.log(process.versions.node.split(".")[0])')"
-  if [ "$NODE_MAJOR" -lt 18 ]; then
-    echo "Node.js v18+ required, found v$NODE_MAJOR"; exit 1
+  if [ "$NODE_MAJOR" -lt 22 ]; then
+    echo "Node.js v22+ required, found v$NODE_MAJOR"; exit 1
   fi
   ok "node $(node -v), npm $(npm -v), git $(git --version | awk '{print $3}')"
 
